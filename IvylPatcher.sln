@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32228.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IvylPatcher", "IvylPatcher\IvylPatcher.csproj", "{93B77983-5DB4-4006-95AB-29883A5AA210}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{93B77983-5DB4-4006-95AB-29883A5AA210}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93B77983-5DB4-4006-95AB-29883A5AA210}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93B77983-5DB4-4006-95AB-29883A5AA210}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93B77983-5DB4-4006-95AB-29883A5AA210}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4A49D712-41AE-46B9-B81E-9C060D31C090}
+	EndGlobalSection
+EndGlobal

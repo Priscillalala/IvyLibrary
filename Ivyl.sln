@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.32228.343
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ivyl", "Ivyl\Ivyl.csproj", "{03F0F94C-3A41-4CBB-8FEE-7685B1A5C906}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IvylPatcher", "IvylPatcher\IvylPatcher.csproj", "{DF6D15E4-08D5-4C36-BC0D-AB851CF3AFC0}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{03F0F94C-3A41-4CBB-8FEE-7685B1A5C906}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03F0F94C-3A41-4CBB-8FEE-7685B1A5C906}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03F0F94C-3A41-4CBB-8FEE-7685B1A5C906}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03F0F94C-3A41-4CBB-8FEE-7685B1A5C906}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF6D15E4-08D5-4C36-BC0D-AB851CF3AFC0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF6D15E4-08D5-4C36-BC0D-AB851CF3AFC0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF6D15E4-08D5-4C36-BC0D-AB851CF3AFC0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF6D15E4-08D5-4C36-BC0D-AB851CF3AFC0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2DB20F60-D29A-4E0C-A57F-B7CA3C34D114}
+	EndGlobalSection
+EndGlobal

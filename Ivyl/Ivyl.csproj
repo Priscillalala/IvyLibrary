@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>preview</LangVersion>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="LoggerInPlace.cs" />
+		<Compile Remove="AssetBundleInPlace.cs" />
+		<Compile Remove="ConfigInPlace.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="BepInEx.Core" Version="5.4.21" />
+		<PackageReference Include="RiskOfRain2.GameLibs" Version="1.2.4-r.0" />
+		<PackageReference Include="UnityEngine.Modules" Version="2019.4.26" />
+		<PackageReference Include="MMHOOK.RoR2" Version="2022.9.20">
+			<NoWarn>NU1701</NoWarn>
+		</PackageReference>
+		<PackageReference Include="R2API.RecalculateStats" Version="1.2.0" />
+		<PackageReference Include="R2API.Elites" Version="1.0.3" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="Decalicious">
+	    <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Risk of Rain 2\Risk of Rain 2_Data\Managed\Decalicious.dll</HintPath>
+	  </Reference>
+	  <Reference Include="R2API.ArtifactCode">
+	    <HintPath>..\..\..\..\Desktop\[modding\assemblies\R2API.ArtifactCode.dll</HintPath>
+	  </Reference>
+	  <Reference Include="R2API.Difficulty">
+	    <HintPath>..\..\..\..\Desktop\[modding\assemblies\R2API.Difficulty.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
+</Project>
