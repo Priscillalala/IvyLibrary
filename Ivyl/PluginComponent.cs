@@ -7,6 +7,7 @@ namespace Ivyl
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
     public class PluginComponent : Attribute
     {
+        [Flags]
         public enum Flags 
         {
             None,

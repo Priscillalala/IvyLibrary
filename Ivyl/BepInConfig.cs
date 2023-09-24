@@ -15,6 +15,7 @@ namespace BepInEx
             this.ComponentEntriesGrouping = ComponentEntriesGrouping;
         }
 
+        [Flags]
         public enum ComponentGroupingFlags
         {
             None,
