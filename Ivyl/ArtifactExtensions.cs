@@ -43,22 +43,23 @@ namespace Ivyl
             return artifactDef;
         }
 
-        private static Dictionary<ArtifactDef, (Action onEnabledAction, Action onDisabledAction)> equipmentEnabledActions;
+        private static Dictionary<ArtifactDef, (Action onEnabledAction, Action onDisabledAction)> artifactEnabledActions;
 
         public static TArtifactDef SetEnabledActions<TArtifactDef>(this TArtifactDef artifactDef, Action onEnabledAction, Action onDisabledAction) where TArtifactDef : ArtifactDef
         {
-            if (equipmentEnabledActions == null)
+            if (artifactEnabledActions == null)
             {
-                equipmentEnabledActions = new Dictionary<ArtifactDef, (Action onEnabledAction, Action onDisabledAction)>();
+                artifactEnabledActions = new Dictionary<ArtifactDef, (Action onEnabledAction, Action onDisabledAction)>();
                 RunArtifactManager.onArtifactEnabledGlobal += RunArtifactManager_onArtifactEnabledGlobal;
                 RunArtifactManager.onArtifactDisabledGlobal += RunArtifactManager_onArtifactDisabledGlobal;
             }
+            artifactEnabledActions[artifactDef] = (onEnabledAction, onDisabledAction);
             return artifactDef;
         }
 
         private static void RunArtifactManager_onArtifactEnabledGlobal(RunArtifactManager runArtifactManager, ArtifactDef artifactDef)
         {
-            if (equipmentEnabledActions.TryGetValue(artifactDef, out (Action onEnabledAction, Action onDisabledAction) enabledActions))
+            if (artifactEnabledActions.TryGetValue(artifactDef, out (Action onEnabledAction, Action onDisabledAction) enabledActions))
             {
                 enabledActions.onEnabledAction();
             }
@@ -66,7 +67,7 @@ namespace Ivyl
 
         private static void RunArtifactManager_onArtifactDisabledGlobal(RunArtifactManager runArtifactManager, ArtifactDef artifactDef)
         {
-            if (equipmentEnabledActions.TryGetValue(artifactDef, out (Action onEnabledAction, Action onDisabledAction) enabledActions))
+            if (artifactEnabledActions.TryGetValue(artifactDef, out (Action onEnabledAction, Action onDisabledAction) enabledActions))
             {
                 enabledActions.onDisabledAction();
             }
