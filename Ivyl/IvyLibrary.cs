@@ -18,6 +18,8 @@ using System.Text.RegularExpressions;
 using BepInEx.Bootstrap;
 using HG.GeneralSerializer;
 using UnityEngine.Rendering;
+using UnityEngine.Networking;
+using System.Threading.Tasks;
 
 [module: UnverifiableCode]
 #pragma warning disable
@@ -95,24 +97,6 @@ namespace Ivyl
             return itemDisplay;
         }
 
-        public static ArtifactCompoundDef FindArtifactCompoundDef(this ArtifactCompound artifactCompound)
-        {
-            return artifactCompound switch
-            {
-                ArtifactCompound.Circle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdCircle.asset").WaitForCompletion(),
-                ArtifactCompound.Triangle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdTriangle.asset").WaitForCompletion(),
-                ArtifactCompound.Diamond => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdDiamond.asset").WaitForCompletion(),
-                ArtifactCompound.Square => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdSquare.asset").WaitForCompletion(),
-                ArtifactCompound.Empty => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdEmpty.asset").WaitForCompletion(),
-                _ => ArtifactCodeAPI.artifactCompounds.FirstOrDefault(x => x.value == (int)artifactCompound)
-            };
-        }
-
-        public static bool TryFindArtifactCompoundDef(ArtifactCompound artifactCompound, out ArtifactCompoundDef artifactCompoundDef)
-        {
-            return artifactCompoundDef = FindArtifactCompoundDef(artifactCompound);
-        }
-
         public static string Nicify(string str)
         {
             if (string.IsNullOrEmpty(str))
@@ -171,6 +155,40 @@ namespace Ivyl
                 return baseValue + ((stack - 1) * stackValue);
             }
             return 0;
+        }
+
+        private static Transform _prefabParent;
+
+        private static void InitPrefabParent()
+        {
+            if (_prefabParent)
+            {
+                return;
+            }
+            _prefabParent = new GameObject("IVYLPrefabs").transform;
+            _prefabParent.gameObject.SetActive(false);
+            UnityEngine.Object.DontDestroyOnLoad(_prefabParent.gameObject);
+            On.RoR2.Util.IsPrefab += (orig, gameObject) => gameObject.transform.parent == _prefabParent || orig(gameObject);
+        }
+
+        public static GameObject CreatePrefab(GameObject original, string name)
+        {
+            InitPrefabParent();
+            GameObject prefab = UnityEngine.Object.Instantiate(original, _prefabParent);
+            prefab.name = name;
+            if (prefab.TryGetComponent(out NetworkIdentity networkIdentity))
+            {
+                networkIdentity.m_AssetId.Reset();
+            }
+            return prefab;
+        }
+
+        public static GameObject CreatePrefab(string name)
+        {
+            InitPrefabParent();
+            GameObject prefab = new GameObject(name);
+            prefab.transform.SetParent(_prefabParent);
+            return prefab;
         }
 
         public static bool IsModLoaded(string guid) => Chainloader.PluginInfos.ContainsKey(guid);

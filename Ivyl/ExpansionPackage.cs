@@ -36,7 +36,10 @@ namespace Ivyl
             string token = expansionIdentifier.ToUpperInvariant().Replace('.', '_');
             ExpansionDef.nameToken = token + "_NAME";
             ExpansionDef.descriptionToken = token + "_DESCRIPTION";
-            ExpansionDef.disabledIconSprite = Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Common/MiscIcons/texUnlockIcon.png").WaitForCompletion();
+            Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Common/MiscIcons/texUnlockIcon.png").Completed += handle =>
+            {
+                ExpansionDef.disabledIconSprite ??= handle.Result;
+            };
             ExpansionDefs.Add(ExpansionDef);
         }
 

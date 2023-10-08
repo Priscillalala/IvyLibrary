@@ -18,6 +18,9 @@ using System.Linq;
 using EntityStates;
 using R2API.ScriptableObjects;
 using HG;
+using System.Text;
+using System.Security.Cryptography;
+using UnityEngine.Networking;
 
 namespace Ivyl
 {
@@ -84,7 +87,7 @@ namespace Ivyl
 
         public string identifier => _identifier;
 
-        public IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
+        public virtual IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
         {
             if (onLoadStaticContent != null)
             {
@@ -98,8 +101,17 @@ namespace Ivyl
             yield break;
         }
 
-        public IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
+        public virtual IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
         {
+            StringBuilder stringBuilder = new StringBuilder(32);
+            MD5 hashAlgorithm = MD5.Create();
+            PopulateAssetIds(BodyPrefabs, nameof(BodyPrefabs), stringBuilder, hashAlgorithm);
+            PopulateAssetIds(MasterPrefabs, nameof(MasterPrefabs), stringBuilder, hashAlgorithm);
+            PopulateAssetIds(ProjectilePrefabs, nameof(ProjectilePrefabs), stringBuilder, hashAlgorithm);
+            PopulateAssetIds(NetworkedObjectPrefabs, nameof(NetworkedObjectPrefabs), stringBuilder, hashAlgorithm);
+            PopulateAssetIds(GameModePrefabs, nameof(GameModePrefabs), stringBuilder, hashAlgorithm);
+            hashAlgorithm.Dispose();
+
             if (onGenerateContentPack != null)
             {
                 foreach (GenerateContentPackAsyncDelegate func in onGenerateContentPack.GetInvocationList())
@@ -108,12 +120,13 @@ namespace Ivyl
                 }
                 onGenerateContentPack = null;
             }
+
             ContentPack.Copy(_contentPack, args.output);
             args.ReportProgress(1f);
             yield break;
         }
 
-        public IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
+        public virtual IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
         {
             if (onFinalize != null)
             {
@@ -123,9 +136,25 @@ namespace Ivyl
                 }
                 onFinalize = null;
             }
-            //Finalized = true;
             args.ReportProgress(1f);
             yield break;
+        }
+
+        protected virtual void PopulateAssetIds(NamedAssetCollection<GameObject> assets, string collectionIdentifier, StringBuilder stringBuilder, HashAlgorithm hashAlgorithm)
+        {
+            for (int i = 0; i < assets.Length; i++)
+            {
+                NamedAssetCollection<GameObject>.AssetInfo assetInfo = assets.assetInfos[i];
+                if (assetInfo.asset.TryGetComponent(out NetworkIdentity networkIdentity) && !networkIdentity.assetId.IsValid())
+                {
+                    stringBuilder.Clear();
+                    foreach (byte b in hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(assetInfo.assetName + _identifier + collectionIdentifier)))
+                    {
+                        stringBuilder.Append(b.ToString("x2"));
+                    }
+                    networkIdentity.SetDynamicAssetId(NetworkHash128.Parse(stringBuilder.ToString()));
+                }
+            }
         }
 
         public void AddEntityStatesFromAssembly(Assembly assembly)

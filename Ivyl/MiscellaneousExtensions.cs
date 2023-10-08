@@ -15,6 +15,7 @@ using BepInEx.Bootstrap;
 using HG.GeneralSerializer;
 using UnityEngine.Rendering;
 using RoR2;
+using System.Threading.Tasks;
 
 namespace Ivyl
 {
@@ -355,6 +356,37 @@ namespace Ivyl
                 };
             }
             return request;
+        }
+
+        public static ArtifactCompoundDef FindArtifactCompoundDef(this ArtifactCompound artifactCompound)
+        {
+            return artifactCompound switch
+            {
+                ArtifactCompound.Circle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdCircle.asset").WaitForCompletion(),
+                ArtifactCompound.Triangle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdTriangle.asset").WaitForCompletion(),
+                ArtifactCompound.Diamond => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdDiamond.asset").WaitForCompletion(),
+                ArtifactCompound.Square => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdSquare.asset").WaitForCompletion(),
+                ArtifactCompound.Empty => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdEmpty.asset").WaitForCompletion(),
+                _ => ArtifactCodeAPI.artifactCompounds.FirstOrDefault(x => x.value == (int)artifactCompound)
+            };
+        }
+
+        public static async Task<ArtifactCompoundDef> FindArtifactCompoundDefAsync(this ArtifactCompound artifactCompound)
+        {
+            return artifactCompound switch
+            {
+                ArtifactCompound.Circle => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdCircle.asset").Task,
+                ArtifactCompound.Triangle => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdTriangle.asset").Task,
+                ArtifactCompound.Diamond => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdDiamond.asset").Task,
+                ArtifactCompound.Square => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdSquare.asset").Task,
+                ArtifactCompound.Empty => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdEmpty.asset").Task,
+                _ => ArtifactCodeAPI.artifactCompounds.FirstOrDefault(x => x.value == (int)artifactCompound)
+            };
+        }
+
+        public static bool TryFindArtifactCompoundDef(ArtifactCompound artifactCompound, out ArtifactCompoundDef artifactCompoundDef)
+        {
+            return artifactCompoundDef = FindArtifactCompoundDef(artifactCompound);
         }
     }
 }

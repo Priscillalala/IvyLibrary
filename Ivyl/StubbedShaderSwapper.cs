@@ -56,7 +56,7 @@ namespace Ivyl
                     }
                     if (loadRealShaderOperation.IsValid())
                     {
-                        yield return new WaitUntil(() => loadRealShaderOperation.IsDone);
+                        yield return loadRealShaderOperation;
                         mat.shader = loadRealShaderOperation.Result ?? mat.shader;
                     }
                 }

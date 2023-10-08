@@ -19,6 +19,7 @@ using UnityEngine.Events;
 using BepInEx.Configuration;
 using RoR2;
 using ThreeEyedGames;
+using System.Threading.Tasks;
 
 namespace Ivyl
 {
@@ -96,6 +97,31 @@ namespace Ivyl
             return new ArtifactFormulaDisplay.ArtifactCompoundDisplayInfo
             {
                 artifactCompoundDef = compound.FindArtifactCompoundDef(),
+                decal = formulaDisplay.transform.Find(decalPath)?.GetComponent<Decal>()
+            };
+        }
+
+        public async Task CopyToFormulaDisplayAsync(ArtifactFormulaDisplay formulaDisplay)
+        {
+            formulaDisplay.artifactCompoundDisplayInfos = new[]
+            {
+                await GetDisplayInfoAsync(formulaDisplay, topRow.Item1, "Slot 1,1"),
+                await GetDisplayInfoAsync(formulaDisplay, topRow.Item2, "Slot 1,2"),
+                await GetDisplayInfoAsync(formulaDisplay, topRow.Item3, "Slot 1,3"),
+                await GetDisplayInfoAsync(formulaDisplay, middleRow.Item1, "Slot 2,1"),
+                await GetDisplayInfoAsync(formulaDisplay, middleRow.Item2, "Slot 2,2"),
+                await GetDisplayInfoAsync(formulaDisplay, middleRow.Item3, "Slot 2,3"),
+                await GetDisplayInfoAsync(formulaDisplay, bottomRow.Item1, "Slot 3,1"),
+                await GetDisplayInfoAsync(formulaDisplay, bottomRow.Item2, "Slot 3,2"),
+                await GetDisplayInfoAsync(formulaDisplay, bottomRow.Item3, "Slot 3,3"),
+            };
+        }
+
+        private async Task<ArtifactFormulaDisplay.ArtifactCompoundDisplayInfo> GetDisplayInfoAsync(ArtifactFormulaDisplay formulaDisplay, ArtifactCompound compound, string decalPath)
+        {
+            return new ArtifactFormulaDisplay.ArtifactCompoundDisplayInfo
+            {
+                artifactCompoundDef = await compound.FindArtifactCompoundDefAsync(),
                 decal = formulaDisplay.transform.Find(decalPath)?.GetComponent<Decal>()
             };
         }

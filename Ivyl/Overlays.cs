@@ -55,7 +55,7 @@ namespace Ivyl
             else Debug.LogError($"{nameof(Overlays)}: {nameof(CharacterModel_UpdateOverlays)} IL hook failed!");
         }
 
-        public static void RegisterTemporaryOverlay(Material material, Func<CharacterModel, bool> condition)
+        public static void RegisterConditionalOverlay(Material material, Func<CharacterModel, bool> condition)
         {
             if (_init)
             {
