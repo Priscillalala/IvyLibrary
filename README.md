@@ -14,12 +14,16 @@ Load asset bundles directly from your mod plugin, and swap out stubbed shaders w
 Use plugin components to organize your project and even generate customizable configuration files.
 > See: `PluginComponent` attribute, `BepInConfig` attribute
 
+### Asynchronous Framework
+Simple API to load vanilla RoR2 assets synchronously or asynchronously.
+> See: `RoR2Asset`, `RoR2AssetGroup`
+
 ### Language
 Create formatted and easily translatable language files directly within your project.
 > See: `LanguageStrings` attribute
 
 ### And More!
-Miscellaneous utils to make your life easier.
+IVYL is a work-in-progress! Expect improvements over time
 
 ## Contact
 Don't hesitate to reach out! You can find me in the [Spikestrip Modding Server](https://discord.gg/me7P53smzk) @Groove_Salad

@@ -157,40 +157,6 @@ namespace Ivyl
             return 0;
         }
 
-        private static Transform _prefabParent;
-
-        private static void InitPrefabParent()
-        {
-            if (_prefabParent)
-            {
-                return;
-            }
-            _prefabParent = new GameObject("IVYLPrefabs").transform;
-            _prefabParent.gameObject.SetActive(false);
-            UnityEngine.Object.DontDestroyOnLoad(_prefabParent.gameObject);
-            On.RoR2.Util.IsPrefab += (orig, gameObject) => gameObject.transform.parent == _prefabParent || orig(gameObject);
-        }
-
-        public static GameObject CreatePrefab(GameObject original, string name)
-        {
-            InitPrefabParent();
-            GameObject prefab = UnityEngine.Object.Instantiate(original, _prefabParent);
-            prefab.name = name;
-            if (prefab.TryGetComponent(out NetworkIdentity networkIdentity))
-            {
-                networkIdentity.m_AssetId.Reset();
-            }
-            return prefab;
-        }
-
-        public static GameObject CreatePrefab(string name)
-        {
-            InitPrefabParent();
-            GameObject prefab = new GameObject(name);
-            prefab.transform.SetParent(_prefabParent);
-            return prefab;
-        }
-
         public static bool IsModLoaded(string guid) => Chainloader.PluginInfos.ContainsKey(guid);
     }
 }
