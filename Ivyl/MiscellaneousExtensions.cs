@@ -71,6 +71,11 @@ namespace Ivyl
             return eliteTierDef.eliteTypes.Length - 1;
         }
 
+        public static int AddElite(this CombatDirector.EliteTierDef eliteTierDef, EliteWrapper elite)
+        {
+            return AddElite(eliteTierDef, elite.EliteDef);
+        }
+
         public static int AddScene(this SceneCollection sceneCollection, SceneDef scene, float weight = 1f)
         {
             ArrayUtils.ArrayAppend(ref sceneCollection._sceneEntries, new SceneCollection.SceneEntry 

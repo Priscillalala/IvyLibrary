@@ -98,10 +98,23 @@ namespace Ivyl
 
             languageTokenPairsLookup = (Lookup<string, KeyValuePair<string, string>>)languageStringsPairs.ToLookup(x => x.languageName, x => x.tokenPair);
 
-            if (Language.currentLanguage != null && languageTokenPairsLookup.Contains(Language.currentLanguageName))
+            foreach (var tokenPairs in languageTokenPairsLookup)
+            {
+                Language language = Language.FindLanguageByName(tokenPairs.Key);
+                if (language != null && language.stringsLoaded)
+                {
+                    language.SetStringsByTokens(tokenPairs);
+                }
+            }
+            /*if (Language.currentLanguage != null && languageTokenPairsLookup.Contains(Language.currentLanguageName))
             {
                 Language.currentLanguage.SetStringsByTokens(languageTokenPairsLookup[Language.currentLanguageName]);
-            }
+                Language fallbackLanguage
+                if (Language.currentLanguage.fallbackLanguage != null && languageTokenPairsLookup.Contains(Language.currentLanguage.fallbackLanguage.name))
+                {
+                    Language.currentLanguage.fallbackLanguage.SetStringsByTokens(languageTokenPairsLookup[Language.currentLanguage.fallbackLanguage.name]);
+                }
+            }*/
 
             On.RoR2.Language.LoadStrings += Language_LoadStrings;
         }

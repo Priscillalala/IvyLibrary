@@ -103,15 +103,6 @@ namespace Ivyl
 
         public virtual IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
         {
-            StringBuilder stringBuilder = new StringBuilder(32);
-            MD5 hashAlgorithm = MD5.Create();
-            PopulateAssetIds(BodyPrefabs, nameof(BodyPrefabs), stringBuilder, hashAlgorithm);
-            PopulateAssetIds(MasterPrefabs, nameof(MasterPrefabs), stringBuilder, hashAlgorithm);
-            PopulateAssetIds(ProjectilePrefabs, nameof(ProjectilePrefabs), stringBuilder, hashAlgorithm);
-            PopulateAssetIds(NetworkedObjectPrefabs, nameof(NetworkedObjectPrefabs), stringBuilder, hashAlgorithm);
-            PopulateAssetIds(GameModePrefabs, nameof(GameModePrefabs), stringBuilder, hashAlgorithm);
-            hashAlgorithm.Dispose();
-
             if (onGenerateContentPack != null)
             {
                 foreach (GenerateContentPackAsyncDelegate func in onGenerateContentPack.GetInvocationList())
@@ -128,6 +119,15 @@ namespace Ivyl
 
         public virtual IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
         {
+            StringBuilder stringBuilder = new StringBuilder(32);
+            MD5 hashAlgorithm = MD5.Create();
+            PopulateAssetIds(BodyPrefabs, nameof(BodyPrefabs), stringBuilder, hashAlgorithm);
+            PopulateAssetIds(MasterPrefabs, nameof(MasterPrefabs), stringBuilder, hashAlgorithm);
+            PopulateAssetIds(ProjectilePrefabs, nameof(ProjectilePrefabs), stringBuilder, hashAlgorithm);
+            PopulateAssetIds(NetworkedObjectPrefabs, nameof(NetworkedObjectPrefabs), stringBuilder, hashAlgorithm);
+            PopulateAssetIds(GameModePrefabs, nameof(GameModePrefabs), stringBuilder, hashAlgorithm);
+            hashAlgorithm.Dispose();
+
             if (onFinalize != null)
             {
                 foreach (FinalizeAsyncDelegate func in onFinalize.GetInvocationList())
@@ -215,14 +215,6 @@ namespace Ivyl
         }
 
         protected virtual void AssignRequiredExpansion(ref ExpansionDef requiredExpansion) { }
-
-        /*private void ThrowIfFinalized()
-        {
-            if (Finalized)
-            {
-                throw new InvalidOperationException("");
-            }
-        }*/
 
         public ItemDef DefineItem(string identifier) => DefineItem<ItemDef>(identifier);
 

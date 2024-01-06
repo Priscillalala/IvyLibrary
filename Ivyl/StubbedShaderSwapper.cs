@@ -26,6 +26,7 @@ namespace Ivyl
 {
     public class StubbedShaderSwapper : MonoBehaviour
     {
+        private static readonly List<Material> _affectedMaterials = new List<Material>();
         public static void Dispatch(AssetBundle assetBundle)
         {
             GameObject instance = new GameObject("StubbedShaderSwapper");
@@ -37,8 +38,7 @@ namespace Ivyl
         private IEnumerator SwapStubbedShaders(AssetBundle assetBundle)
         {
             AssetBundleRequest allMatsRequest = assetBundle.LoadAllAssetsAsync<Material>();
-            yield return new WaitUntil(() => allMatsRequest.isDone);
-            int length = allMatsRequest.allAssets.Length;
+            yield return allMatsRequest;
             foreach (Material mat in allMatsRequest.allAssets)
             {
                 string name = mat.shader.name;
@@ -56,8 +56,15 @@ namespace Ivyl
                     }
                     if (loadRealShaderOperation.IsValid())
                     {
-                        yield return loadRealShaderOperation;
-                        mat.shader = loadRealShaderOperation.Result ?? mat.shader;
+                        if (!loadRealShaderOperation.IsDone)
+                        {
+                            yield return loadRealShaderOperation;
+                        }
+                        if (loadRealShaderOperation.Result)
+                        {
+                            mat.shader = loadRealShaderOperation.Result;
+                            _affectedMaterials.Add(mat);
+                        }
                     }
                 }
             }
