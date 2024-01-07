@@ -73,8 +73,8 @@ namespace Ivyl
             return this as TDifficultyWrapper;
         }
 
-        public string GetNameToken() => DifficultyDef.nameToken;
+        public string NameToken => DifficultyDef.nameToken;
 
-        public string GetDescriptionToken() => DifficultyDef.descriptionToken;
+        public string DescriptionToken => DifficultyDef.descriptionToken;
     }
 }

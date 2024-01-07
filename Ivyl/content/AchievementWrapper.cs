@@ -63,8 +63,8 @@ namespace Ivyl
             return this as TAchievementWrapper;
         }
 
-        public string GetNameToken() => AchievementDef.nameToken;
+        public string NameToken => AchievementDef.nameToken;
 
-        public string GetDescriptionToken() => AchievementDef.descriptionToken;
+        public string DescriptionToken => AchievementDef.descriptionToken;
     }
 }

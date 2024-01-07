@@ -37,7 +37,7 @@ namespace Ivyl
         public static TItemDef SetPickupModelPrefab<TItemDef>(this TItemDef itemDef, GameObject pickupModelPrefab, ModelPanelParams logbookModelParams) where TItemDef : ItemDef
         {
             itemDef.pickupModelPrefab = pickupModelPrefab;
-            IvyLibrary.SetupModelPanelParameters(pickupModelPrefab, logbookModelParams);
+            Ivyl.SetupModelPanelParameters(pickupModelPrefab, logbookModelParams);
             return itemDef;
         }
 

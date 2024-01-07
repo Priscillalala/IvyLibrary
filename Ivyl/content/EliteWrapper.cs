@@ -118,6 +118,6 @@ namespace Ivyl
             return this as TEliteWrapper;
         }
 
-        public string GetModifierToken() => EliteDef.modifierToken;
+        public string ModifierToken => EliteDef.modifierToken;
     }
 }

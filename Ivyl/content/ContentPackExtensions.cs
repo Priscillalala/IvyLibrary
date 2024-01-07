@@ -22,6 +22,7 @@ using System.Text;
 using System.Security.Cryptography;
 using UnityEngine.Networking;
 using System.Runtime.CompilerServices;
+using UnityEngine.AddressableAssets;
 
 namespace Ivyl
 {
@@ -173,7 +174,24 @@ namespace Ivyl
             {
                 requiredExpansion = contentPack.expansionDefs[0];
             }
-        } 
+        }
+
+        public static ExpansionDef DefineExpansion(this ContentPack contentPack) => DefineExpansion<ExpansionDef>(contentPack);
+
+        public static TExpansionDef DefineExpansion<TExpansionDef>(this ContentPack contentPack) where TExpansionDef : ExpansionDef
+        {
+            TExpansionDef expansion = ScriptableObject.CreateInstance<TExpansionDef>();
+            expansion.name = contentPack.identifier;
+            string token = contentPack.identifier.ToUpperInvariant().Replace('.', '_');
+            expansion.nameToken = token + "_NAME";
+            expansion.descriptionToken = token + "_DESCRIPTION";
+            Addressables.LoadAssetAsync<Sprite>("RoR2/Base/Common/MiscIcons/texUnlockIcon.png").Completed += texUnlockIcon =>
+            {
+                expansion.disabledIconSprite ??= texUnlockIcon.Result;
+            };
+            contentPack.expansionDefs.Add(expansion);
+            return expansion;
+        }
 
         public static ItemDef DefineItem(this ContentPack contentPack, string identifier) => DefineItem<ItemDef>(contentPack, identifier);
 

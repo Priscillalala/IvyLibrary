@@ -106,15 +106,6 @@ namespace Ivyl
                     language.SetStringsByTokens(tokenPairs);
                 }
             }
-            /*if (Language.currentLanguage != null && languageTokenPairsLookup.Contains(Language.currentLanguageName))
-            {
-                Language.currentLanguage.SetStringsByTokens(languageTokenPairsLookup[Language.currentLanguageName]);
-                Language fallbackLanguage
-                if (Language.currentLanguage.fallbackLanguage != null && languageTokenPairsLookup.Contains(Language.currentLanguage.fallbackLanguage.name))
-                {
-                    Language.currentLanguage.fallbackLanguage.SetStringsByTokens(languageTokenPairsLookup[Language.currentLanguage.fallbackLanguage.name]);
-                }
-            }*/
 
             On.RoR2.Language.LoadStrings += Language_LoadStrings;
         }
