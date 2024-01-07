@@ -11,7 +11,7 @@ using JetBrains.Annotations;
 using System.Reflection;
 using BepInEx.Logging;
 
-namespace Ivyl
+namespace IvyLibrary
 {
 	internal static class AssetAssociatedBehaviorUtil 
 	{

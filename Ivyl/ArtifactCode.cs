@@ -21,7 +21,7 @@ using RoR2;
 using ThreeEyedGames;
 using System.Threading.Tasks;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public struct ArtifactCode
     {

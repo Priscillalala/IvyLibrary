@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using HG;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class Idrs
     {

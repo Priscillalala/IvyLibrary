@@ -3,7 +3,7 @@ using RoR2.ContentManagement;
 using System;
 using System.Collections;
 
-namespace BepInEx
+namespace IvyLibrary
 {
     public abstract class BaseContentPlugin : BaseUnityPlugin, IContentPackProvider
     {

@@ -9,7 +9,7 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using RoR2.Projectile;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class Events
     {

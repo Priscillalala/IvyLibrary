@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public class AssetBundleRequest<T> : IEnumerator where T : UnityEngine.Object
     {

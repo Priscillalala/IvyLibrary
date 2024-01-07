@@ -21,7 +21,7 @@ using RoR2;
 using ThreeEyedGames;
 using HG;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public record class EliteWrapper(EliteDef EliteDef, List<EliteDef> SubEliteDefs, EquipmentDef EliteEquipmentDef, BuffDef EliteBuffDef)
         : EliteWrapper<EliteWrapper, EliteDef, EquipmentDef, BuffDef>(EliteDef, SubEliteDefs, EliteEquipmentDef, EliteBuffDef)

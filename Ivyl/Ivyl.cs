@@ -29,7 +29,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 #pragma warning restore
 [assembly: HG.Reflection.SearchableAttribute.OptIn]
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class Ivyl
     {

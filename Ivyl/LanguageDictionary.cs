@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public class LanguageDictionary : Dictionary<string, string>
     {

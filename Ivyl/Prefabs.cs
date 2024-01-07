@@ -7,7 +7,7 @@ using Mono.Cecil.Cil;
 using Mono.Cecil;
 using UnityEngine.Networking;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class Prefabs
     {

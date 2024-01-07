@@ -24,7 +24,7 @@ using UnityEngine.Networking;
 using System.Runtime.CompilerServices;
 using UnityEngine.AddressableAssets;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class ContentPackExtensions
     {

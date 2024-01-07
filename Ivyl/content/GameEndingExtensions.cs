@@ -10,7 +10,7 @@ using HG;
 using UnityEngine.AddressableAssets;
 using EntityStates;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class GameEndingExtensions
     {

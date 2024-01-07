@@ -20,7 +20,7 @@ using BepInEx.Configuration;
 using RoR2;
 using ThreeEyedGames;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public record class DifficultyWrapper(DifficultyDef DifficultyDef, DifficultyIndex DifficultyIndex) 
         : DifficultyWrapper<DifficultyWrapper, DifficultyDef>(DifficultyDef, DifficultyIndex) 

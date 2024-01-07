@@ -12,7 +12,7 @@ using System.Reflection;
 using BepInEx.Logging;
 using System.Linq;
 
-namespace Ivyl
+namespace IvyLibrary
 {
 	public abstract class BaseEquipmentBodyBehavior : MonoBehaviour
 	{

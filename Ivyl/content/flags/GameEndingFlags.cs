@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     [Flags]
     public enum GameEndingFlags

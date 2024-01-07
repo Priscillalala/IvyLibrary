@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public struct ModelPanelParams
     {

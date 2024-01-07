@@ -1,7 +1,7 @@
 ﻿using System;
 using RoR2;
 
-namespace Ivyl
+namespace IvyLibrary
 {
 	public struct UnlockableType : IEquatable<UnlockableType>, IEquatable<string>
 	{

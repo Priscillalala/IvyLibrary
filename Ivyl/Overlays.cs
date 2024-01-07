@@ -9,7 +9,7 @@ using MonoMod.Cil;
 using Mono.Cecil.Cil;
 using Mono.Cecil;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class Overlays
     {

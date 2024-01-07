@@ -1,4 +1,4 @@
-﻿namespace Ivyl
+﻿namespace IvyLibrary
 {
     public enum EquipmentAvailability
     {

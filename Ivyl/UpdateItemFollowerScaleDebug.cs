@@ -12,7 +12,7 @@ using RoR2;
 using UnityEngine.AddressableAssets;
 using System.Linq;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public class UpdateItemFollowerScaleDebug : MonoBehaviour
     {

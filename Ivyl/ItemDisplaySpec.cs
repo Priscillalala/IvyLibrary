@@ -1,7 +1,7 @@
 ﻿using RoR2;
 using UnityEngine;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public struct ItemDisplaySpec
     {

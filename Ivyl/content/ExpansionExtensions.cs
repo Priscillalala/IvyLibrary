@@ -10,7 +10,7 @@ using RoR2.ExpansionManagement;
 using UnityEngine.AddressableAssets;
 using RoR2.EntitlementManagement;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class ExpansionExtensions
     {

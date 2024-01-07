@@ -12,7 +12,7 @@ using RoR2;
 using System.Linq;
 using R2API.ScriptableObjects;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class LanguageStringsAttribute : HG.Reflection.SearchableAttribute

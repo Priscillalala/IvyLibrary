@@ -1,7 +1,7 @@
 ﻿using R2API;
 using RoR2;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class EliteTiers
     {

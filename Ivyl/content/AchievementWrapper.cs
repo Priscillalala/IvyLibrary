@@ -20,7 +20,7 @@ using BepInEx.Configuration;
 using RoR2;
 using ThreeEyedGames;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public record class AchievementWrapper(AchievementDef AchievementDef, UnlockableDef UnlockableDef) 
         : AchievementWrapper<AchievementWrapper, AchievementDef, UnlockableDef>(AchievementDef, UnlockableDef) 

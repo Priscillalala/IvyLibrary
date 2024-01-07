@@ -10,7 +10,7 @@ using HG;
 using UnityEngine.AddressableAssets;
 using System.Collections.Generic;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class EquipmentExtensions
     {

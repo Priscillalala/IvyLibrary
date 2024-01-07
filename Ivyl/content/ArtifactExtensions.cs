@@ -11,7 +11,7 @@ using UnityEngine.AddressableAssets;
 using R2API;
 using System.Collections.Generic;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class ArtifactExtensions
     {

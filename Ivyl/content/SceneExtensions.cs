@@ -9,7 +9,7 @@ using RoR2.ContentManagement;
 using HG;
 using UnityEngine.AddressableAssets;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class SceneExtensions
     {

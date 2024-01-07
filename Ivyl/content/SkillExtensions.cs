@@ -9,7 +9,7 @@ using UnityEngine.AddressableAssets;
 using RoR2.Skills;
 using EntityStates;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class SkillExtensions
     {
