@@ -13,7 +13,7 @@ using BepInEx.Logging;
 
 namespace IvyLibrary
 {
-	public abstract class BaseItemMasterBehavior : MonoBehaviour
+	public abstract class BaseItemMasterBehavior : BaseAssetAssociatedBehavior<BaseItemMasterBehavior.ItemDefAssociationAttribute, BaseItemMasterBehavior.NetworkContext>
 	{
 		private static CharacterMaster earlyAssignmentMaster = null;
 		private static Dictionary<UnityObjectWrapperKey<CharacterMaster>, BaseItemMasterBehavior[]> masterToItemBehaviors;
@@ -63,29 +63,21 @@ namespace IvyLibrary
 				}
 			}
 
-			AssetAssociatedBehaviorUtil.CommenceAttributeSearch<ItemDefAssociationAttribute, ItemDef>(typeof(BaseItemMasterBehavior), RegisterBehaviour);
+			CommenceAttributeSearch<ItemDef>(typeof(BaseItemMasterBehavior), RegisterBehaviour);
 
 			if (shared.Count <= 0)
             {
 				return;
             }
 
-			NetworkContext.server.SetItemTypePairs(server);
-			NetworkContext.client.SetItemTypePairs(client);
-			NetworkContext.shared.SetItemTypePairs(shared);
+			BaseItemMasterBehavior.server.SetItemTypePairs(server);
+			BaseItemMasterBehavior.client.SetItemTypePairs(client);
+			BaseItemMasterBehavior.shared.SetItemTypePairs(shared);
 			masterToItemBehaviors = new Dictionary<UnityObjectWrapperKey<CharacterMaster>, BaseItemMasterBehavior[]>();
 
-			//On.RoR2.CharacterMaster.Awake += CharacterMaster_Awake;
 			On.RoR2.CharacterMaster.OnDestroy += CharacterMaster_OnDestroy;
 			On.RoR2.CharacterMaster.OnInventoryChanged += CharacterMaster_OnInventoryChanged;
 		}
-
-		/*private static void CharacterMaster_Awake(On.RoR2.CharacterMaster.orig_Awake orig, CharacterMaster self)
-		{
-			BaseItemMasterBehavior[] value = NetworkContext.Current.behaviorArraysPool.Request();
-			masterToItemBehaviors.Add(self, value);
-			orig(self);
-		}*/
 
 		private static void CharacterMaster_OnDestroy(On.RoR2.CharacterMaster.orig_OnDestroy orig, CharacterMaster self)
 		{
@@ -99,7 +91,7 @@ namespace IvyLibrary
 				masterToItemBehaviors.Remove(self);
 				if (NetworkServer.active || NetworkClient.active)
 				{
-					NetworkContext.Current.behaviorArraysPool.Return(array);
+					GetCurrentNetworkContext().behaviorArraysPool.Return(array);
 				}
 			}
 		}
@@ -112,7 +104,7 @@ namespace IvyLibrary
 
 		private static void UpdateMasterItemBehaviorStacks(CharacterMaster master)
 		{
-			ref NetworkContext currentNetworkContext = ref NetworkContext.Current;
+			ref NetworkContext currentNetworkContext = ref GetCurrentNetworkContext();
 			Inventory inventory = master.inventory;
 			if (!masterToItemBehaviors.TryGetValue(master, out BaseItemMasterBehavior[] array) && inventory && inventory.itemAcquisitionOrder.Count > 0)
             {
@@ -168,14 +160,8 @@ namespace IvyLibrary
 			}
 		}
 
-		private struct NetworkContext
+		public struct NetworkContext
 		{
-			public static ref NetworkContext Current => ref AssetAssociatedBehaviorUtil.GetNetworkContext(ref server, ref client, ref shared);
-
-			public static NetworkContext server;
-			public static NetworkContext client;
-			public static NetworkContext shared;
-
 			public BaseItemBodyBehavior.ItemTypePair[] itemTypePairs;
 			public FixedSizeArrayPool<BaseItemMasterBehavior> behaviorArraysPool;
 

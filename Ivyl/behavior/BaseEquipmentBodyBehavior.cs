@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace IvyLibrary
 {
-	public abstract class BaseEquipmentBodyBehavior : MonoBehaviour
+	public abstract class BaseEquipmentBodyBehavior : BaseAssetAssociatedBehavior<BaseEquipmentBodyBehavior.EquipmentDefDefAssociationAttribute, BaseEquipmentBodyBehavior.NetworkContext>
 	{
 		private static CharacterBody earlyAssignmentBody = null;
 		private static Dictionary<UnityObjectWrapperKey<CharacterBody>, EquipmentBehaviorsState> bodyToEquipmentBehaviors;
@@ -64,16 +64,16 @@ namespace IvyLibrary
 				}
 			}
 
-			AssetAssociatedBehaviorUtil.CommenceAttributeSearch<EquipmentDefDefAssociationAttribute, EquipmentDef>(typeof(BaseEquipmentBodyBehavior), RegisterBehaviour);
+			CommenceAttributeSearch<EquipmentDef>(typeof(BaseEquipmentBodyBehavior), RegisterBehaviour);
 
 			if (shared.Count <= 0)
             {
 				return;
             }
 
-			NetworkContext.server.SetEquipmentTypePairs(server);
-			NetworkContext.client.SetEquipmentTypePairs(client);
-			NetworkContext.shared.SetEquipmentTypePairs(shared);
+			BaseEquipmentBodyBehavior.server.SetEquipmentTypePairs(server);
+			BaseEquipmentBodyBehavior.client.SetEquipmentTypePairs(client);
+			BaseEquipmentBodyBehavior.shared.SetEquipmentTypePairs(shared);
 			bodyToEquipmentBehaviors = new Dictionary<UnityObjectWrapperKey<CharacterBody>, EquipmentBehaviorsState>();
 
             CharacterBody.onBodyDestroyGlobal += CharacterBody_onBodyDestroyGlobal;
@@ -112,7 +112,7 @@ namespace IvyLibrary
 							Destroy(state.activeBehaviorsArray[i]);
 						}
 					}
-					if (NetworkContext.Current.equipmentTypePairsDict.TryGetValue(inventory.currentEquipmentIndex, out EquipmentTypePair[] equipmentTypePairs))
+					if (GetCurrentNetworkContext().equipmentTypePairsDict.TryGetValue(inventory.currentEquipmentIndex, out EquipmentTypePair[] equipmentTypePairs))
                     {
 						SetActiveBehaviors(body, ref state.activeBehaviorsArray, equipmentTypePairs);
 					} 
@@ -124,7 +124,7 @@ namespace IvyLibrary
 			} 
 			else
             {
-				if (!inventory || !NetworkContext.Current.equipmentTypePairsDict.TryGetValue(inventory.currentEquipmentIndex, out EquipmentTypePair[] equipmentTypePairs))
+				if (!inventory || !GetCurrentNetworkContext().equipmentTypePairsDict.TryGetValue(inventory.currentEquipmentIndex, out EquipmentTypePair[] equipmentTypePairs))
 				{
 					return;
 				}
@@ -155,34 +155,10 @@ namespace IvyLibrary
 			}
 		}
 
-		/*private static void SetEquipmentActive(CharacterBody body, ref BaseEquipmentBodyBehavior behavior, Type behaviorType, bool active)
-		{
-			if (behavior != active)
-			{
-				if (active)
-                {
-					earlyAssignmentBody = body;
-					behavior = (BaseEquipmentBodyBehavior)body.gameObject.AddComponent(behaviorType);
-					earlyAssignmentBody = null;
-				} 
-				else
-                {
-					behavior.state = EquipmentState.empty;
-					Destroy(behavior);
-					behavior = null;
-				}
-			}
-			if (behavior != null)
-			{
-				behavior.state = body.inventory.currentEquipmentState;
-			}
-		}*/
-
 		public struct EquipmentTypePair
         {
 			public EquipmentIndex equipmentIndex;
 			public Type behaviorType;
-			public bool requiresActiveSlot;
 		}
 
 		public struct EquipmentBehaviorsState
@@ -191,24 +167,15 @@ namespace IvyLibrary
 			public EquipmentIndex currentEquipmentIndex;
 		}
 
-		private struct NetworkContext
+		public struct NetworkContext
 		{
-			public static ref NetworkContext Current => ref AssetAssociatedBehaviorUtil.GetNetworkContext(ref server, ref client, ref shared);
-
-			public static NetworkContext server;
-			public static NetworkContext client;
-			public static NetworkContext shared;
-
 			public Dictionary<EquipmentIndex, EquipmentTypePair[]> equipmentTypePairsDict;
-			//public EquipmentTypePair[] equipmentTypePairs;
-			//public FixedSizeArrayPool<BaseEquipmentBodyBehavior> behaviorArraysPool;
 
 			public void SetEquipmentTypePairs(List<EquipmentTypePair> equipmentTypePairs)
 			{
 				equipmentTypePairsDict = equipmentTypePairs
 					.GroupBy(x => x.equipmentIndex)
 					.ToDictionary(x => x.Key, x => x.ToArray());
-				//behaviorArraysPool = new FixedSizeArrayPool<BaseEquipmentBodyBehavior>(this.equipmentTypePairs.Length);
 			}
 		}
 

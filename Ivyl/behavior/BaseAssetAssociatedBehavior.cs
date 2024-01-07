@@ -1,9 +1,7 @@
-﻿using RoR2;
-using System;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Networking;
 using R2API;
-using RoR2.Items;
 using System.Collections.Generic;
 using HG;
 using HG.Reflection;
@@ -13,21 +11,27 @@ using BepInEx.Logging;
 
 namespace IvyLibrary
 {
-	internal static class AssetAssociatedBehaviorUtil 
+	public abstract class BaseAssetAssociatedBehavior<TAssociationAttribute, TNetworkContext> : MonoBehaviour
+		where TAssociationAttribute : SearchableAttribute
+		where TNetworkContext : struct
 	{
-		internal static void CommenceAttributeSearch<TAttribute, TAsset>(Type behaviourType, Action<TAttribute, MethodInfo, TAsset> onAssetFound) where TAttribute : HG.Reflection.SearchableAttribute
-		{
-			List<TAttribute> attributeList = new List<TAttribute>();
-			HG.Reflection.SearchableAttribute.GetInstances(attributeList);
+		protected static TNetworkContext server;
+		protected static TNetworkContext client;
+		protected static TNetworkContext shared;
 
-			foreach (TAttribute attribute in attributeList)
+		protected static void CommenceAttributeSearch<TAsset>(Type behaviourType, Action<TAssociationAttribute, MethodInfo, TAsset> onAssetFound)
+		{
+			List<TAssociationAttribute> attributeList = new List<TAssociationAttribute>();
+			SearchableAttribute.GetInstances(attributeList);
+
+			foreach (TAssociationAttribute attribute in attributeList)
 			{
 				if (attribute.target is not MethodInfo methodInfo)
 				{
-					Debug.LogError($"{nameof(TAttribute)} cannot be applied to object of type '{attribute.target?.GetType().Name}'");
+					Debug.LogError($"{nameof(TAssociationAttribute)} cannot be applied to object of type '{attribute.target?.GetType().Name}'");
 					continue;
 				}
-				string cannotBeAppliedToMethod = $"{nameof(TAttribute)} cannot be applied to method {methodInfo.DeclaringType.FullName}.{methodInfo.Name}: ";
+				string cannotBeAppliedToMethod = $"{nameof(TAssociationAttribute)} cannot be applied to method {methodInfo.DeclaringType.FullName}.{methodInfo.Name}: ";
 				if (!methodInfo.IsStatic)
 				{
 					Debug.LogError(cannotBeAppliedToMethod + $"Method is not static.");
@@ -63,7 +67,7 @@ namespace IvyLibrary
 			}
 		}
 
-		internal static ref T GetNetworkContext<T>(ref T server, ref T client, ref T shared) where T : struct
+		protected static ref TNetworkContext GetCurrentNetworkContext()
 		{
 			if (NetworkServer.active)
 			{

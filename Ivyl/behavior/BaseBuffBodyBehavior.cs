@@ -13,7 +13,7 @@ using System.Linq;
 
 namespace IvyLibrary
 {
-	public abstract class BaseBuffBodyBehavior : MonoBehaviour
+	public abstract class BaseBuffBodyBehavior : BaseAssetAssociatedBehavior<BaseBuffBodyBehavior.BuffDefAssociationAttribute, BaseBuffBodyBehavior.NetworkContext>
 	{
 		private static CharacterBody earlyAssignmentBody = null;
 		private static Dictionary<UnityObjectWrapperKey<CharacterBody>, BaseBuffBodyBehavior[]> bodyToBuffBehaviors;
@@ -63,16 +63,16 @@ namespace IvyLibrary
 				}
 			}
 
-			AssetAssociatedBehaviorUtil.CommenceAttributeSearch<BuffDefAssociationAttribute, BuffDef>(typeof(BaseBuffBodyBehavior), RegisterBehaviour);
+			CommenceAttributeSearch<BuffDef>(typeof(BaseBuffBodyBehavior), RegisterBehaviour);
 
 			if (shared.Count <= 0)
 			{
 				return;
 			}
 
-			NetworkContext.server.SetBuffTypePairs(server);
-			NetworkContext.client.SetBuffTypePairs(client);
-			NetworkContext.shared.SetBuffTypePairs(shared);
+			BaseBuffBodyBehavior.server.SetBuffTypePairs(server);
+			BaseBuffBodyBehavior.client.SetBuffTypePairs(client);
+			BaseBuffBodyBehavior.shared.SetBuffTypePairs(shared);
 			bodyToBuffBehaviors = new Dictionary<UnityObjectWrapperKey<CharacterBody>, BaseBuffBodyBehavior[]>();
 
 			CharacterBody.onBodyAwakeGlobal += OnBodyAwakeGlobal;
@@ -81,7 +81,7 @@ namespace IvyLibrary
 		}
 		private static void OnBodyAwakeGlobal(CharacterBody body)
 		{
-			BaseBuffBodyBehavior[] value = NetworkContext.Current.behaviorArraysPool.Request();
+			BaseBuffBodyBehavior[] value = GetCurrentNetworkContext().behaviorArraysPool.Request();
 			bodyToBuffBehaviors.Add(body, value);
 		}
 
@@ -95,13 +95,13 @@ namespace IvyLibrary
 			bodyToBuffBehaviors.Remove(body);
 			if (NetworkServer.active || NetworkClient.active)
 			{
-				NetworkContext.Current.behaviorArraysPool.Return(array);
+				GetCurrentNetworkContext().behaviorArraysPool.Return(array);
 			}
 		}
 
 		private static void CharacterBody_SetBuffCount(On.RoR2.CharacterBody.orig_SetBuffCount orig, CharacterBody self, BuffIndex buffType, int newCount)
         {
-			Lookup<BuffIndex, BuffTypePair> buffTypePairLookup = NetworkContext.Current.buffTypePairsLookup;
+			Lookup<BuffIndex, BuffTypePair> buffTypePairLookup = GetCurrentNetworkContext().buffTypePairsLookup;
 			if (!buffTypePairLookup.Contains(buffType))
             {
 				orig(self, buffType, newCount);
@@ -142,21 +142,15 @@ namespace IvyLibrary
 			}
 		}
 
-		private struct BuffTypePair
+		public struct BuffTypePair
 		{
 			public BuffIndex buffIndex;
 			public Type behaviorType;
 			public int index;
 		}
 
-		private struct NetworkContext
+		public struct NetworkContext
 		{
-			public static ref NetworkContext Current => ref AssetAssociatedBehaviorUtil.GetNetworkContext(ref server, ref client, ref shared);
-
-			public static NetworkContext server;
-			public static NetworkContext client;
-			public static NetworkContext shared;
-
 			public Lookup<BuffIndex, BuffTypePair> buffTypePairsLookup;
 			public FixedSizeArrayPool<BaseBuffBodyBehavior> behaviorArraysPool;
 
