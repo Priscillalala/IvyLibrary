@@ -644,6 +644,20 @@ namespace IvyLibrary
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        public static AchievementWrapper DefineAchievementForSkill(this ContentPack contentPack, string identifier, SkillDef skill)
+        {
+            UnlockableDef unlockable = DefineUnlockableForSkillImpl<UnlockableDef>(skill, contentPack);
+            return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
+        }
+
+        public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkill<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, SkillDef skill)
+            where TAchievementDef : AchievementDef
+            where TUnlockableDef : UnlockableDef
+        {
+            TUnlockableDef unlockable = DefineUnlockableForSkillImpl<TUnlockableDef>(skill, contentPack);
+            return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private static TUnlockableDef DefineUnlockableForSkillImpl<TUnlockableDef>(SkillDef skill, ContentPack contentPack) where TUnlockableDef : UnlockableDef
         {

@@ -2,6 +2,7 @@
 using RoR2.ContentManagement;
 using System;
 using System.Collections;
+using BepInEx;
 
 namespace IvyLibrary
 {
