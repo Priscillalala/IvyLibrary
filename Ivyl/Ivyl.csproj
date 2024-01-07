@@ -6,6 +6,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Compile Remove="content_extensions\**" />
+	  <EmbeddedResource Remove="content_extensions\**" />
+	  <None Remove="content_extensions\**" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Compile Remove="LoggerInPlace.cs" />
 		<Compile Remove="AssetBundleInPlace.cs" />
 		<Compile Remove="ConfigInPlace.cs" />

@@ -23,11 +23,11 @@ namespace Ivyl
         public ExpansionPackage(string expansionIdentifier, string contentPrefix = null) : base(expansionIdentifier, contentPrefix) { }
     }
 
-    public abstract class ExpansionPackage<TIvylExpansionPack, TExpansionDef> : ContentPackage 
-        where TIvylExpansionPack : ExpansionPackage<TIvylExpansionPack, TExpansionDef>
+    public abstract class ExpansionPackage<TExpansionPack, TExpansionDef> : ContentPackage 
+        where TExpansionPack : ExpansionPackage<TExpansionPack, TExpansionDef>
         where TExpansionDef : ExpansionDef
     {
-        public ExpansionDef ExpansionDef { get; }
+        public TExpansionDef ExpansionDef { get; }
 
         public ExpansionPackage(string expansionIdentifier, string contentPrefix) : base(expansionIdentifier, contentPrefix)
         {
@@ -43,22 +43,22 @@ namespace Ivyl
             ExpansionDefs.Add(ExpansionDef);
         }
 
-        public TIvylExpansionPack SetRequiredEntitlement(EntitlementDef requiredEntitlement)
+        public TExpansionPack SetRequiredEntitlement(EntitlementDef requiredEntitlement)
         {
             ExpansionDef.requiredEntitlement = requiredEntitlement;
-            return this as TIvylExpansionPack;
+            return this as TExpansionPack;
         }
 
-        public TIvylExpansionPack SetIconSprite(Sprite iconSprite)
+        public TExpansionPack SetIconSprite(Sprite iconSprite)
         {
             ExpansionDef.iconSprite = iconSprite;
-            return this as TIvylExpansionPack;
+            return this as TExpansionPack;
         }
 
-        public TIvylExpansionPack SetRunBehaviorPrefab(GameObject runBehaviorPrefab)
+        public TExpansionPack SetRunBehaviorPrefab(GameObject runBehaviorPrefab)
         {
             ExpansionDef.runBehaviorPrefab = runBehaviorPrefab;
-            return this as TIvylExpansionPack;
+            return this as TExpansionPack;
         }
 
         protected override void AssignRequiredExpansion(ref ExpansionDef requiredExpansion)

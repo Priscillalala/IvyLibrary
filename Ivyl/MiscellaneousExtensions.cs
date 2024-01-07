@@ -163,51 +163,6 @@ namespace Ivyl
             return result;
         }
 
-        public static void AddTo(this R2APISerializableContentPack serializableContentPack, ContentPack contentPack)
-        {
-            typeof(R2APISerializableContentPack).GetMethod("EnsureNoFieldsAreNull", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(serializableContentPack, null);
-
-            contentPack.bodyPrefabs.Add(serializableContentPack.bodyPrefabs);
-            contentPack.masterPrefabs.Add(serializableContentPack.masterPrefabs);
-            contentPack.projectilePrefabs.Add(serializableContentPack.projectilePrefabs);
-            contentPack.gameModePrefabs.Add(serializableContentPack.gameModePrefabs);
-            contentPack.effectDefs.Add(serializableContentPack.effectPrefabs.Select(x => new EffectDef(x)).ToArray());
-            contentPack.networkedObjectPrefabs.Add(serializableContentPack.networkedObjectPrefabs);
-            contentPack.skillDefs.Add(serializableContentPack.skillDefs);
-            contentPack.skillFamilies.Add(serializableContentPack.skillFamilies);
-            contentPack.sceneDefs.Add(serializableContentPack.sceneDefs);
-            contentPack.itemDefs.Add(serializableContentPack.itemDefs);
-            contentPack.itemTierDefs.Add(serializableContentPack.itemTierDefs);
-            contentPack.itemRelationshipTypes.Add(serializableContentPack.itemRelationshipTypes);
-            contentPack.equipmentDefs.Add(serializableContentPack.equipmentDefs);
-            contentPack.buffDefs.Add(serializableContentPack.buffDefs);
-            contentPack.eliteDefs.Add(serializableContentPack.eliteDefs);
-            contentPack.unlockableDefs.Add(serializableContentPack.unlockableDefs);
-            contentPack.survivorDefs.Add(serializableContentPack.survivorDefs);
-            contentPack.artifactDefs.Add(serializableContentPack.artifactDefs);
-            contentPack.surfaceDefs.Add(serializableContentPack.surfaceDefs);
-            contentPack.networkSoundEventDefs.Add(serializableContentPack.networkSoundEventDefs);
-            contentPack.musicTrackDefs.Add(serializableContentPack.musicTrackDefs);
-            contentPack.gameEndingDefs.Add(serializableContentPack.gameEndingDefs);
-            contentPack.entityStateConfigurations.Add(serializableContentPack.entityStateConfigurations);
-            contentPack.expansionDefs.Add(serializableContentPack.expansionDefs);
-            contentPack.entitlementDefs.Add(serializableContentPack.entitlementDefs);
-            contentPack.miscPickupDefs.Add(serializableContentPack.miscPickupDefs);
-
-            HashSet<Type> entityStateTypes = new HashSet<Type>();
-            for (int i = 0; i < serializableContentPack.entityStateTypes.Length; i++)
-            {
-                Type stateType = serializableContentPack.entityStateTypes[i].stateType;
-                if (stateType != null)
-                {
-                    entityStateTypes.Add(stateType);
-                    continue;
-                }
-                Debug.LogWarning("SerializableContentPack \"" + serializableContentPack.name + "\" could not resolve type with name \"" + serializableContentPack.entityStateTypes[i].typeName + "\". The type will not be available in the content pack.");
-            }
-            contentPack.entityStateTypes.Add(entityStateTypes.ToArray());
-        }
-
         public static void AddComponent<T>(this GameObject gameObject, out T component) where T : Component
         {
             component = gameObject.AddComponent<T>();
