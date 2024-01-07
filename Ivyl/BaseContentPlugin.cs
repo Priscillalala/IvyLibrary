@@ -1,4 +1,5 @@
-﻿using RoR2.ContentManagement;
+﻿using BepInEx.Logging;
+using RoR2.ContentManagement;
 using System;
 using System.Collections;
 
@@ -6,8 +7,6 @@ namespace BepInEx
 {
     public abstract class BaseContentPlugin : BaseUnityPlugin, IContentPackProvider
     {
-        public static BaseContentPlugin Instance { get; private set; }
-
         public ContentPack Content { get; }
 
         public string identifier => Info.Metadata.GUID;
@@ -22,7 +21,6 @@ namespace BepInEx
 
         protected BaseContentPlugin() : base()
         {
-            Instance = this;
             Content = new ContentPack
             {
                 identifier = identifier
@@ -30,7 +28,7 @@ namespace BepInEx
             ContentManager.collectContentPackProviders += add => add(this);
         }
 
-        public virtual IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
+        protected virtual IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
         {
             if (loadStaticContentAsync != null)
             {
@@ -42,7 +40,7 @@ namespace BepInEx
             }
         }
 
-        public virtual IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
+        protected virtual IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
         {
             if (generateContentPackAsync != null)
             {
@@ -55,7 +53,7 @@ namespace BepInEx
             ContentPack.Copy(Content, args.output);
         }
 
-        public virtual IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
+        protected virtual IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
         {
             if (finalizeAsync != null)
             {
@@ -66,5 +64,22 @@ namespace BepInEx
                 finalizeAsync = null;
             }
         }
+
+        IEnumerator IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs args) => LoadStaticContentAsync(args);
+
+        IEnumerator IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs args) => GenerateContentPackAsync(args);
+
+        IEnumerator IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs args) => FinalizeAsync(args);
+    }
+
+    public abstract class BaseContentPlugin<TInstance> : BaseContentPlugin where TInstance : BaseContentPlugin<TInstance>
+    {
+        public static TInstance Instance { get; private set; }
+
+        public BaseContentPlugin() : base()
+        {
+            Instance = (TInstance)this;
+        }
+
     }
 }

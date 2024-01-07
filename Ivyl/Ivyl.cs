@@ -20,6 +20,8 @@ using HG.GeneralSerializer;
 using UnityEngine.Rendering;
 using UnityEngine.Networking;
 using System.Threading.Tasks;
+using BepInEx.Configuration;
+using UnityEngine.ResourceManagement.AsyncOperations;
 
 [module: UnverifiableCode]
 #pragma warning disable
@@ -108,6 +110,36 @@ namespace Ivyl
             return 0;
         }
 
+        public static AssetBundleRequest<T> Convert<T>(this AssetBundleRequest request) where T : UnityEngine.Object
+        {
+            return new AssetBundleRequest<T>(request);
+        }
+
+        public static AsyncOperationHandle LoadAddressableAssetAsync<TObject>(object key, out AsyncOperationHandle<TObject> handle)
+        {
+            return handle = Addressables.LoadAssetAsync<TObject>(key);
+        }
+
+        public static AssetBundleRequest LoadAssetAsync<T>(this AssetBundle assetBundle, string name, out AssetBundleRequest<T> request) where T : UnityEngine.Object
+        {
+            return request = assetBundle.LoadAssetAsync<T>(name).Convert<T>();
+        }
+
+        public static T Value<T>(this ConfigFile config, string section, string key, T defaultValue, string description)
+        {
+            return config.Bind(section, key, defaultValue, description).Value;
+        }
+
+        public static T Value<T>(this ConfigFile config, string section, string key, T defaultValue, ConfigDescription configDescription = null)
+        {
+            return config.Bind(section, key, defaultValue, configDescription).Value;
+        }
+
+        public static T Value<T>(this ConfigFile config, ConfigDefinition configDefinition, T defaultValue, ConfigDescription configDescription = null)
+        {
+            return config.Bind(configDefinition, defaultValue, configDescription).Value;
+        }
+
         public static bool IsModLoaded(string guid) => Chainloader.PluginInfos.ContainsKey(guid);
 
         public static void Add<TAsset>(this NamedAssetCollection<TAsset> assetCollection, TAsset newAsset)
@@ -165,23 +197,23 @@ namespace Ivyl
             return AddElite(eliteTierDef, elite.EliteDef);
         }
 
-        public static int AddScene(this SceneCollection sceneCollection, SceneDef scene, float weight = 1f)
+        public static ref SceneCollection.SceneEntry AddScene(this SceneCollection sceneCollection, SceneDef scene, float weight = 1f)
         {
             ArrayUtils.ArrayAppend(ref sceneCollection._sceneEntries, new SceneCollection.SceneEntry
             {
                 sceneDef = scene,
                 weight = weight,
             });
-            return sceneCollection._sceneEntries.Length - 1;
+            return ref sceneCollection._sceneEntries[sceneCollection._sceneEntries.Length - 1];
         }
 
-        public static int AddRelationshipPair(this ItemRelationshipProvider itemRelationshipProvider, ItemDef item1, ItemDef item2)
+        public static ref ItemDef.Pair AddRelationshipPair(this ItemRelationshipProvider itemRelationshipProvider, ItemDef item1, ItemDef item2)
         {
-            return AddRelationshipPair(itemRelationshipProvider, new ItemDef.Pair
+            return ref itemRelationshipProvider.relationships[AddRelationshipPair(itemRelationshipProvider, new ItemDef.Pair
             {
                 itemDef1 = item1,
                 itemDef2 = item2
-            });
+            })];
         }
 
         public static int AddRelationshipPair(this ItemRelationshipProvider itemRelationshipProvider, ItemDef.Pair relationshipPair)
@@ -190,7 +222,7 @@ namespace Ivyl
             return itemRelationshipProvider.relationships.Length - 1;
         }
 
-        public static int AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec itemDisplay, ItemDisplayTransform itemDisplayTransform = default)
+        public static ref ItemDisplayRuleSet.KeyAssetRuleGroup AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec itemDisplay, ItemDisplayTransform itemDisplayTransform = default)
         {
             if (!itemDisplay.keyAsset)
             {
@@ -211,7 +243,7 @@ namespace Ivyl
                 if (idrs.keyAssetRuleGroups[i].keyAsset == itemDisplay.keyAsset)
                 {
                     idrs.keyAssetRuleGroups[i].displayRuleGroup.AddDisplayRule(itemDisplayRule);
-                    return i;
+                    return ref idrs.keyAssetRuleGroups[i];
                 }
             }
             ItemDisplayRuleSet.KeyAssetRuleGroup keyAssetRuleGroup = new ItemDisplayRuleSet.KeyAssetRuleGroup
@@ -223,38 +255,12 @@ namespace Ivyl
                 }
             };
             ArrayUtils.ArrayAppend(ref idrs.keyAssetRuleGroups, keyAssetRuleGroup);
-            return idrs.keyAssetRuleGroups.Length - 1;
+            return ref idrs.keyAssetRuleGroups[idrs.keyAssetRuleGroups.Length - 1];
         }
 
-        public static int AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec itemDisplay, string childName, Vector3 localPos, Vector3 localAngles, Vector3 localScale)
+        public static ref ItemDisplayRuleSet.KeyAssetRuleGroup AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec itemDisplay, string childName, Vector3 localPos, Vector3 localAngles, Vector3 localScale)
         {
-            return AddDisplayRule(idrs, itemDisplay, new ItemDisplayTransform(childName, localPos, localAngles, localScale));
-        }
-
-        public static int[] AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec[] itemDisplays, ItemDisplayTransform itemDisplayTransform = default)
-        {
-            int[] result = new int[itemDisplays.Length];
-            for (int i = 0; i < itemDisplays.Length; i++)
-            {
-                result[i] = AddDisplayRule(idrs, itemDisplays[i], itemDisplayTransform);
-            }
-            return result;
-        }
-
-        public static int[] AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec[] itemDisplays, string childName, Vector3 localPos, Vector3 localAngles, Vector3 localScale)
-        {
-            ItemDisplayTransform itemDisplayTransform = new ItemDisplayTransform(childName, localPos, localAngles, localScale);
-            int[] result = new int[itemDisplays.Length];
-            for (int i = 0; i < itemDisplays.Length; i++)
-            {
-                result[i] = AddDisplayRule(idrs, itemDisplays[i], itemDisplayTransform);
-            }
-            return result;
-        }
-
-        public static void AddComponent<T>(this GameObject gameObject, out T component) where T : Component
-        {
-            component = gameObject.AddComponent<T>();
+            return ref AddDisplayRule(idrs, itemDisplay, new ItemDisplayTransform(childName, localPos, localAngles, localScale));
         }
 
         public static bool TryModifyFieldValue<T>(this EntityStateConfiguration entityStateConfiguration, string fieldName, T value)
@@ -287,37 +293,37 @@ namespace Ivyl
             }
         }
 
-        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef, out int stack) => HasItem(characterBody, itemDef ? itemDef.itemIndex : ItemIndex.None, out stack);
-
         public static bool HasItem(this CharacterBody characterBody, ItemIndex itemIndex, out int stack)
         {
             if (characterBody && characterBody.inventory)
             {
-                stack = characterBody.inventory.GetItemCount(itemIndex);
-                return stack > 0;
+                return (stack = characterBody.inventory.GetItemCount(itemIndex)) > 0;
             }
             stack = 0;
             return false;
         }
 
-        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef) => HasItem(characterBody, itemDef.itemIndex);
+        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef, out int stack) => HasItem(characterBody, itemDef ? itemDef.itemIndex : ItemIndex.None, out stack);
 
         public static bool HasItem(this CharacterBody characterBody, ItemIndex itemIndex) => characterBody && characterBody.inventory && characterBody.inventory.GetItemCount(itemIndex) > 0;
 
-        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef, out int stack) => HasItem(characterMaster, itemDef ? itemDef.itemIndex : ItemIndex.None, out stack);
+        public static bool HasItem(this CharacterBody characterBody, ItemDef itemDef) => HasItem(characterBody, itemDef.itemIndex);
 
         public static bool HasItem(this CharacterMaster characterMaster, ItemIndex itemIndex, out int stack)
         {
             if (characterMaster && characterMaster.inventory)
             {
-                stack = characterMaster.inventory.GetItemCount(itemIndex);
-                return stack > 0;
+                return (stack = characterMaster.inventory.GetItemCount(itemIndex)) > 0;
             }
             stack = 0;
             return false;
         }
 
-        public static bool HasBuff(this CharacterBody characterBody, BuffDef buffDef, out int count) => HasBuff(characterBody, buffDef ? buffDef.buffIndex : BuffIndex.None, out count);
+        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef, out int stack) => HasItem(characterMaster, itemDef ? itemDef.itemIndex : ItemIndex.None, out stack);
+        
+        public static bool HasItem(this CharacterMaster characterMaster, ItemIndex itemIndex) => characterMaster && characterMaster.inventory && characterMaster.inventory.GetItemCount(itemIndex) > 0;
+
+        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef) => HasItem(characterMaster, itemDef.itemIndex);
 
         public static bool HasBuff(this CharacterBody characterBody, BuffIndex buffType, out int count)
         {
@@ -330,9 +336,7 @@ namespace Ivyl
             return false;
         }
 
-        public static bool HasItem(this CharacterMaster characterMaster, ItemDef itemDef) => HasItem(characterMaster, itemDef.itemIndex);
-
-        public static bool HasItem(this CharacterMaster characterMaster, ItemIndex itemIndex) => characterMaster && characterMaster.inventory && characterMaster.inventory.GetItemCount(itemIndex) > 0;
+        public static bool HasBuff(this CharacterBody characterBody, BuffDef buffDef, out int count) => HasBuff(characterBody, buffDef ? buffDef.buffIndex : BuffIndex.None, out count);
 
         public static void ClearDotStacksForType(this DotController dotController, DotController.DotIndex dotIndex)
         {

@@ -594,26 +594,61 @@ namespace Ivyl
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
-        public static AchievementWrapper DefineAchievementForSkill(this ContentPack contentPack, string identifier, SkillDef skill, ref SkillFamily.Variant[] unlockableSkillVariants)
+        public static AchievementWrapper DefineAchievementForSkill(this ContentPack contentPack, string identifier, ref SkillFamily.Variant skillVariant)
         {
-            UnlockableDef unlockable = DefineUnlockable(contentPack, UnlockableType.Skills, skill.skillName).SetNameToken(skill.skillNameToken);
-            for (int i = 0; i < unlockableSkillVariants.Length; i++)
+            if (skillVariant.skillDef == null)
             {
-                unlockableSkillVariants[i].unlockableDef = unlockable;
+                throw new ArgumentException(nameof(skillVariant));
             }
+            UnlockableDef unlockable = DefineUnlockableForSkillImpl<UnlockableDef>(skillVariant.skillDef, contentPack);
+            skillVariant.unlockableDef = unlockable;
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
-        public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkill<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, SkillDef skill, ref SkillFamily.Variant[] unlockableSkillVariants)
+        public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkill<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, ref SkillFamily.Variant skillVariant)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
         {
-            TUnlockableDef unlockable = DefineUnlockable<TUnlockableDef>(contentPack, UnlockableType.Skills, skill.skillName).SetNameToken(skill.skillNameToken);
-            for (int i = 0; i < unlockableSkillVariants.Length; i++)
+            if (skillVariant.skillDef == null)
             {
-                unlockableSkillVariants[i].unlockableDef = unlockable;
+                throw new ArgumentException(nameof(skillVariant));
             }
+            TUnlockableDef unlockable = DefineUnlockableForSkillImpl<TUnlockableDef>(skillVariant.skillDef, contentPack);
+            skillVariant.unlockableDef = unlockable;
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
+        }
+
+        public static AchievementWrapper DefineAchievementForSkill(this ContentPack contentPack, string identifier, ref SkillFamily.Variant skillVariant1, ref SkillFamily.Variant skillVariant2)
+        {
+            if (skillVariant1.skillDef == null)
+            {
+                throw new ArgumentException(nameof(skillVariant1));
+            }
+            UnlockableDef unlockable = DefineUnlockableForSkillImpl<UnlockableDef>(skillVariant1.skillDef, contentPack);
+            skillVariant1.unlockableDef = unlockable;
+            skillVariant2.unlockableDef = unlockable;
+            return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
+        }
+
+        public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkill<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, ref SkillFamily.Variant skillVariant1, ref SkillFamily.Variant skillVariant2)
+            where TAchievementDef : AchievementDef
+            where TUnlockableDef : UnlockableDef
+        {
+            if (skillVariant1.skillDef == null)
+            {
+                throw new ArgumentException(nameof(skillVariant1));
+            }
+            TUnlockableDef unlockable = DefineUnlockableForSkillImpl<TUnlockableDef>(skillVariant1.skillDef, contentPack);
+            skillVariant1.unlockableDef = unlockable;
+            skillVariant2.unlockableDef = unlockable;
+            return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static TUnlockableDef DefineUnlockableForSkillImpl<TUnlockableDef>(SkillDef skill, ContentPack contentPack) where TUnlockableDef : UnlockableDef
+        {
+            return DefineUnlockable<TUnlockableDef>(contentPack, UnlockableType.Skills, skill.skillName)
+                .SetNameToken(skill.skillNameToken);
         }
 
         public static AchievementWrapper DefineAchievementForSkin(this ContentPack contentPack, string identifier, SkinDef skin)
