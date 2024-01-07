@@ -97,39 +97,6 @@ namespace Ivyl
             return itemDisplay;
         }
 
-        public static string Nicify(string str)
-        {
-            if (string.IsNullOrEmpty(str))
-            {
-                return str;
-            }
-            char[] charArray = Regex.Replace(str, @"((?<!^)((?<=[^_])[\p{Lu}][\p{Ll}]|(?<=[\p{Ll}])[\p{Lu}])|(?<=[\p{Ll}])[\d])", @" $1", RegexOptions.Compiled).ToCharArray();
-            int i = 0;
-            if (char.IsLower(charArray[0]))
-            {
-                i = 1;
-                charArray[0] = char.ToUpperInvariant(charArray[0]);
-            }
-            while (i < charArray.Length - 1)
-            {
-                if (charArray[i] == '_')
-                {
-                    charArray[i] = ' ';
-                    if (char.IsLower(charArray[i + 1]))
-                    {
-                        i++;
-                        charArray[i + 1] = char.ToUpperInvariant(charArray[i + 1]);
-                    }
-                }
-                i++;
-            }
-            if (charArray[charArray.Length - 1] == '_')
-            {
-                charArray[charArray.Length - 1] = ' ';
-            }
-            return new string(charArray).Trim();
-        }
-
         public static SkillFamily FindSkillFamily(GameObject bodyPrefab, SkillSlot slot)
         {
             if (bodyPrefab.TryGetComponent(out SkillLocator skillLocator))

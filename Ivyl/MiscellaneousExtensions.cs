@@ -43,7 +43,7 @@ namespace Ivyl
             assetCollection.assetToName[newAsset] = assetName;
         }
 
-        public static SkillVariantRef AddSkill(this SkillFamily skillFamily, SkillDef skillDef, UnlockableDef requiredUnlockable = null)
+        public static ref SkillFamily.Variant AddSkill(this SkillFamily skillFamily, SkillDef skillDef, UnlockableDef requiredUnlockable = null)
         {
             ArrayUtils.ArrayAppend(ref skillFamily.variants, new SkillFamily.Variant
             {
@@ -51,10 +51,10 @@ namespace Ivyl
                 unlockableDef = requiredUnlockable,
                 viewableNode = new ViewablesCatalog.Node(skillDef.skillName, false, null),
             });
-            return new SkillVariantRef(skillFamily, skillFamily.variants.Length - 1);
+            return ref skillFamily.variants[skillFamily.variants.Length - 1];
         }
 
-        public static SkillVariantRef InsertSkill(this SkillFamily skillFamily, int index, SkillDef skillDef, UnlockableDef requiredUnlockable = null)
+        public static ref SkillFamily.Variant InsertSkill(this SkillFamily skillFamily, int index, SkillDef skillDef, UnlockableDef requiredUnlockable = null)
         {
             ArrayUtils.ArrayInsert(ref skillFamily.variants, index, new SkillFamily.Variant
             {
@@ -62,7 +62,7 @@ namespace Ivyl
                 unlockableDef = requiredUnlockable,
                 viewableNode = new ViewablesCatalog.Node(skillDef.skillName, false, null),
             });
-            return new SkillVariantRef(skillFamily, index);
+            return ref skillFamily.variants[index];
         }
 
         public static int AddElite(this CombatDirector.EliteTierDef eliteTierDef, EliteDef elite)
@@ -311,9 +311,8 @@ namespace Ivyl
 
         public static void RemoveIncomingDamageReceiver(this HealthComponent healthComponent, IOnIncomingDamageServerReceiver onIncomingDamageReceiver)
         {
-            int index = Array.IndexOf(healthComponent.onIncomingDamageReceivers, onIncomingDamageReceiver);
-            if (healthComponent && index >= 0)
-            {
+            if (healthComponent && Array.IndexOf(healthComponent.onIncomingDamageReceivers, onIncomingDamageReceiver) is var index && index >= 0)
+            {   
                 ArrayUtils.ArrayRemoveAtAndResize(ref healthComponent.onIncomingDamageReceivers, index);
             }
         }
@@ -328,39 +327,20 @@ namespace Ivyl
 
         public static void RemoveTakeDamageReceiver(this HealthComponent healthComponent, IOnTakeDamageServerReceiver onTakeDamageReceiver)
         {
-            int index = Array.IndexOf(healthComponent.onTakeDamageReceivers, onTakeDamageReceiver);
-            if (healthComponent && index >= 0)
+            if (healthComponent && Array.IndexOf(healthComponent.onTakeDamageReceivers, onTakeDamageReceiver) is var index && index >= 0)
             {
                 ArrayUtils.ArrayRemoveAtAndResize(ref healthComponent.onTakeDamageReceivers, index);
             }
         }
 
-        public static AssetBundle LoadAssetBundle(this BaseUnityPlugin plugin, string relativePath, bool swapStubbedShaders)
+        public static AssetBundle LoadAssetBundle(this BaseUnityPlugin plugin, string relativePath)
         {
-            string path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath);
-            AssetBundle assetBundle = AssetBundle.LoadFromFile(path);
-            if (swapStubbedShaders)
-            {
-                StubbedShaderSwapper.Dispatch(assetBundle);
-            }
-            return assetBundle;
+            return AssetBundle.LoadFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
         }
 
-        public static AssetBundleCreateRequest LoadAssetBundleAsync(this BaseUnityPlugin plugin, string relativePath, bool swapStubbedShaders)
+        public static AssetBundleCreateRequest LoadAssetBundleAsync(this BaseUnityPlugin plugin, string relativePath)
         {
-            string path = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath);
-            AssetBundleCreateRequest request = AssetBundle.LoadFromFileAsync(path);
-            if (swapStubbedShaders)
-            {
-                request.completed += _ => 
-                {
-                    if (request.assetBundle) 
-                    {
-                        StubbedShaderSwapper.Dispatch(request.assetBundle);
-                    }
-                };
-            }
-            return request;
+            return AssetBundle.LoadFromFileAsync(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
         }
 
         public static ArtifactCompoundDef FindArtifactCompoundDef(this ArtifactCompound artifactCompound)

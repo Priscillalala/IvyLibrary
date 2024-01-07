@@ -26,7 +26,6 @@ namespace Ivyl
 {
     public class ContentPackage : IContentPackProvider
     {
-        //public bool Finalized { get; private set; }
         public NamedAssetCollection<GameObject> BodyPrefabs => _contentPack.bodyPrefabs;
         public NamedAssetCollection<GameObject> MasterPrefabs => _contentPack.masterPrefabs;
         public NamedAssetCollection<GameObject> ProjectilePrefabs => _contentPack.projectilePrefabs;
@@ -592,7 +591,7 @@ namespace Ivyl
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable), unlockable);
         }
 
-        public AchievementWrapper DefineAchievementForSkill(string identifier, SkillDef skill, params SkillVariantRef[] unlockableSkillVariants)
+        public AchievementWrapper DefineAchievementForSkill(string identifier, SkillDef skill, ref SkillFamily.Variant[] unlockableSkillVariants)
         {
             UnlockableDef unlockable = DefineUnlockable(UnlockableType.Skills, skill.skillName).SetNameToken(skill.skillNameToken);
             for (int i = 0; i < unlockableSkillVariants.Length; i++)
@@ -602,7 +601,7 @@ namespace Ivyl
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable), unlockable);
         }
 
-        public AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkill<TAchievementDef, TUnlockableDef>(string identifier, SkillDef skill, params SkillVariantRef[] unlockableSkillVariants)
+        public AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkill<TAchievementDef, TUnlockableDef>(string identifier, SkillDef skill, ref SkillFamily.Variant[] unlockableSkillVariants)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
         {
