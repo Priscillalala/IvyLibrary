@@ -22,6 +22,7 @@ using UnityEngine.Networking;
 using System.Threading.Tasks;
 using BepInEx.Configuration;
 using UnityEngine.ResourceManagement.AsyncOperations;
+using System.Collections;
 
 [module: UnverifiableCode]
 #pragma warning disable
@@ -33,6 +34,40 @@ namespace IvyLibrary
 {
     public static class Ivyl
     {
+        private static Transform _prefabParent;
+
+        private static void InitPrefabParent()
+        {
+            if (_prefabParent)
+            {
+                return;
+            }
+            _prefabParent = new GameObject("IVYLPrefabs").transform;
+            _prefabParent.gameObject.SetActive(false);
+            UnityEngine.Object.DontDestroyOnLoad(_prefabParent.gameObject);
+            On.RoR2.Util.IsPrefab += (orig, gameObject) => gameObject.transform.parent == _prefabParent || orig(gameObject);
+        }
+
+        public static GameObject CreatePrefab(string name)
+        {
+            InitPrefabParent();
+            GameObject prefab = new GameObject(name);
+            prefab.transform.SetParent(_prefabParent);
+            return prefab;
+        }
+
+        public static GameObject ClonePrefab(GameObject original, string name)
+        {
+            InitPrefabParent();
+            GameObject prefab = UnityEngine.Object.Instantiate(original, _prefabParent);
+            prefab.name = name;
+            if (prefab.TryGetComponent(out NetworkIdentity networkIdentity))
+            {
+                networkIdentity.m_AssetId.Reset();
+            }
+            return prefab;
+        }
+
         public static ModelPanelParameters SetupModelPanelParameters(GameObject model, Vector3 modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
         {
             return SetupModelPanelParameters(model, Quaternion.Euler(modelRotation), minDistance, maxDistance, focusPoint, cameraPosition);
@@ -118,6 +153,25 @@ namespace IvyLibrary
         public static AsyncOperationHandle LoadAddressableAssetAsync<TObject>(object key, out AsyncOperationHandle<TObject> handle)
         {
             return handle = Addressables.LoadAssetAsync<TObject>(key);
+        }
+
+        public static AsyncOperationHandle LoadAddressableAssetsAsync<TObject>(IEnumerable keys, out AsyncOperationHandle<IDictionary<string, TObject>> handle)
+        {
+            var loadLocations = Addressables.LoadResourceLocationsAsync(keys, Addressables.MergeMode.Union, typeof(TObject));
+            var loadAssets = Addressables.ResourceManager.CreateChainOperation<IList<TObject>>(loadLocations, x =>
+            {
+                return Addressables.LoadAssetsAsync<TObject>(loadLocations.Result, null, false);
+            });
+            return handle = Addressables.ResourceManager.CreateChainOperation<IDictionary<string, TObject>>(loadAssets, x =>
+            {
+                Dictionary<string, TObject> dict = new Dictionary<string, TObject>();
+                for (int i = 0; i < loadAssets.Result.Count; i++)
+                {
+                    string key = loadLocations.Result[i].PrimaryKey;
+                    dict[key] = dict[System.IO.Path.GetFileNameWithoutExtension(key)] = loadAssets.Result[i];
+                }
+                return Addressables.ResourceManager.CreateCompletedOperation<IDictionary<string, TObject>>(dict, null);
+            });
         }
 
         public static AssetBundleRequest LoadAssetAsync<T>(this AssetBundle assetBundle, string name, out AssetBundleRequest<T> request) where T : UnityEngine.Object
@@ -231,7 +285,7 @@ namespace IvyLibrary
             ItemDisplayRule itemDisplayRule = new ItemDisplayRule
             {
                 followerPrefab = itemDisplay.displayModelPrefab,
-                childName = itemDisplayTransform.childName ?? (idrs == Idrs.EquipmentDrone ? "GunBarrelBase" : "Base"),
+                childName = itemDisplayTransform.childName ?? "Base",
                 localPos = itemDisplayTransform.localPos ?? Vector3.zero,
                 localAngles = itemDisplayTransform.localAngles ?? Vector3.zero,
                 localScale = itemDisplayTransform.localScale ?? Vector3.one,

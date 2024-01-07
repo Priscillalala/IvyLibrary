@@ -64,6 +64,7 @@ namespace IvyLibrary
                 }
                 finalizeAsync = null;
             }
+            Content.PopulateNetworkedObjectAssetIds();
         }
 
         IEnumerator IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs args) => LoadStaticContentAsync(args);
