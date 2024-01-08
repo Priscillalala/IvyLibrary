@@ -1,11 +1,5 @@
-﻿using BepInEx;
-using System;
-using RoR2;
-using UnityEngine.ResourceManagement;
+﻿using System;
 using UnityEngine;
-using RoR2.ContentManagement;
-using HG;
-using UnityEngine.AddressableAssets;
 using RoR2.Skills;
 using EntityStates;
 

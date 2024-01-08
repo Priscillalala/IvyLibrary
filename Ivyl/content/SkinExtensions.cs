@@ -1,13 +1,5 @@
-﻿using BepInEx;
-using System;
-using RoR2;
-using System.Security.Permissions;
-using System.Security;
-using UnityEngine.ResourceManagement;
+﻿using RoR2;
 using UnityEngine;
-using RoR2.ContentManagement;
-using HG;
-using UnityEngine.AddressableAssets;
 
 namespace IvyLibrary
 {

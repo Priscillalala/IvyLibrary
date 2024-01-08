@@ -1,17 +1,13 @@
 ﻿using System;
 using UnityEngine;
 using UnityEngine.Networking;
-using R2API;
 using System.Collections.Generic;
-using HG;
 using HG.Reflection;
-using JetBrains.Annotations;
 using System.Reflection;
-using BepInEx.Logging;
 
 namespace IvyLibrary
 {
-	public abstract class BaseAssetAssociatedBehavior<TAssociationAttribute, TNetworkContext> : MonoBehaviour
+    public abstract class BaseAssetAssociatedBehavior<TAssociationAttribute, TNetworkContext> : MonoBehaviour
 		where TAssociationAttribute : SearchableAttribute
 		where TNetworkContext : struct
 	{

@@ -1,11 +1,6 @@
-﻿using BepInEx;
-using System;
+﻿using System;
 using RoR2;
-using System.Security.Permissions;
-using System.Security;
-using UnityEngine.ResourceManagement;
 using UnityEngine;
-using RoR2.ContentManagement;
 using HG;
 using UnityEngine.AddressableAssets;
 using System.Runtime.CompilerServices;

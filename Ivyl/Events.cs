@@ -1,10 +1,6 @@
 ﻿using System;
 using UnityEngine;
 using RoR2;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
-using RoR2.ExpansionManagement;
-using UnityEngine.Networking;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using RoR2.Projectile;

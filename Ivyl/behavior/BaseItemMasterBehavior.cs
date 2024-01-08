@@ -2,18 +2,15 @@
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
-using R2API;
 using RoR2.Items;
 using System.Collections.Generic;
 using HG;
-using HG.Reflection;
 using JetBrains.Annotations;
 using System.Reflection;
-using BepInEx.Logging;
 
 namespace IvyLibrary
 {
-	public abstract class BaseItemMasterBehavior : BaseAssetAssociatedBehavior<BaseItemMasterBehavior.ItemDefAssociationAttribute, BaseItemMasterBehavior.NetworkContext>
+    public abstract class BaseItemMasterBehavior : BaseAssetAssociatedBehavior<BaseItemMasterBehavior.ItemDefAssociationAttribute, BaseItemMasterBehavior.NetworkContext>
 	{
 		private static CharacterMaster earlyAssignmentMaster = null;
 		private static Dictionary<UnityObjectWrapperKey<CharacterMaster>, BaseItemMasterBehavior[]> masterToItemBehaviors;

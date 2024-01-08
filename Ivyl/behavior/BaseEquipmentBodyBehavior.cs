@@ -1,20 +1,15 @@
 ﻿using RoR2;
 using System;
 using UnityEngine;
-using UnityEngine.Networking;
-using R2API;
-using RoR2.Items;
 using System.Collections.Generic;
 using HG;
-using HG.Reflection;
 using JetBrains.Annotations;
 using System.Reflection;
-using BepInEx.Logging;
 using System.Linq;
 
 namespace IvyLibrary
 {
-	public abstract class BaseEquipmentBodyBehavior : BaseAssetAssociatedBehavior<BaseEquipmentBodyBehavior.EquipmentDefDefAssociationAttribute, BaseEquipmentBodyBehavior.NetworkContext>
+    public abstract class BaseEquipmentBodyBehavior : BaseAssetAssociatedBehavior<BaseEquipmentBodyBehavior.EquipmentDefDefAssociationAttribute, BaseEquipmentBodyBehavior.NetworkContext>
 	{
 		private static CharacterBody earlyAssignmentBody = null;
 		private static Dictionary<UnityObjectWrapperKey<CharacterBody>, EquipmentBehaviorsState> bodyToEquipmentBehaviors;

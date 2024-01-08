@@ -1,9 +1,8 @@
 ﻿using System;
-using RoR2;
 
 namespace IvyLibrary
 {
-	public struct UnlockableType : IEquatable<UnlockableType>, IEquatable<string>
+    public struct UnlockableType : IEquatable<UnlockableType>, IEquatable<string>
 	{
 		public static readonly UnlockableType Items = "Items";
 		public static readonly UnlockableType Logs = "Logs";

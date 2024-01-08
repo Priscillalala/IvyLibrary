@@ -2,18 +2,15 @@
 using System;
 using UnityEngine;
 using UnityEngine.Networking;
-using R2API;
 using System.Collections.Generic;
 using HG;
-using HG.Reflection;
 using JetBrains.Annotations;
 using System.Reflection;
-using BepInEx.Logging;
 using System.Linq;
 
 namespace IvyLibrary
 {
-	public abstract class BaseBuffBodyBehavior : BaseAssetAssociatedBehavior<BaseBuffBodyBehavior.BuffDefAssociationAttribute, BaseBuffBodyBehavior.NetworkContext>
+    public abstract class BaseBuffBodyBehavior : BaseAssetAssociatedBehavior<BaseBuffBodyBehavior.BuffDefAssociationAttribute, BaseBuffBodyBehavior.NetworkContext>
 	{
 		private static CharacterBody earlyAssignmentBody = null;
 		private static Dictionary<UnityObjectWrapperKey<CharacterBody>, BaseBuffBodyBehavior[]> bodyToBuffBehaviors;

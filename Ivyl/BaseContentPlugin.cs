@@ -1,6 +1,4 @@
-﻿using BepInEx.Logging;
-using RoR2.ContentManagement;
-using System;
+﻿using RoR2.ContentManagement;
 using System.Collections;
 using BepInEx;
 using System.Runtime.CompilerServices;
