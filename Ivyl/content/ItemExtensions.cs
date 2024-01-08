@@ -8,6 +8,8 @@ using UnityEngine;
 using RoR2.ContentManagement;
 using HG;
 using UnityEngine.AddressableAssets;
+using System.Runtime.CompilerServices;
+using System.Collections;
 
 namespace IvyLibrary
 {
@@ -60,31 +62,41 @@ namespace IvyLibrary
             return itemDef;
         }
 
-        /*public static TItemDef SetRequiredUnlockable<TItemDef>(this TItemDef itemDef, UnlockableDef requiredUnlockable) where TItemDef : ItemDef
+        public static IEnumerator SetItemsToCorruptAsync(this ItemDef itemDef, params ItemDef[] itemsToCorrupt)
         {
-            itemDef.unlockableDef = requiredUnlockable;
-            return itemDef;
-        }*/
+            var ContagiousItemProvider = Addressables.LoadAssetAsync<ItemRelationshipProvider>("RoR2/DLC1/Common/ContagiousItemProvider.asset");
+            if (!ContagiousItemProvider.IsDone)
+            {
+                yield return ContagiousItemProvider;
+            }
+            SetItemsToCorruptImpl(itemDef, itemsToCorrupt, ContagiousItemProvider.Result);
+        }
 
+        [Obsolete($"{nameof(SetItemsToCorrupt)} is not asynchronous and may stall loading. {nameof(SetItemsToCorruptAsync)} is preferred.", false)]
         public static TItemDef SetItemsToCorrupt<TItemDef>(this TItemDef itemDef, params ItemDef[] itemsToCorrupt) where TItemDef : ItemDef
         {
-            ItemRelationshipProvider contagiousItemProvider = Addressables.LoadAssetAsync<ItemRelationshipProvider>("RoR2/DLC1/Common/ContagiousItemProvider.asset").WaitForCompletion();
-            for (int i = contagiousItemProvider.relationships.Length - 1; i >= 0; i--)
+            SetItemsToCorruptImpl(itemDef, itemsToCorrupt, Addressables.LoadAssetAsync<ItemRelationshipProvider>("RoR2/DLC1/Common/ContagiousItemProvider.asset").WaitForCompletion());
+            return itemDef;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void SetItemsToCorruptImpl(ItemDef itemDef, ItemDef[] itemsToCorrupt, ItemRelationshipProvider ContagiousItemProvider)
+        {
+            for (int i = ContagiousItemProvider.relationships.Length - 1; i >= 0; i--)
             {
-                if (contagiousItemProvider.relationships[i].itemDef2 == itemDef)
+                if (ContagiousItemProvider.relationships[i].itemDef2 == itemDef)
                 {
-                    ArrayUtils.ArrayRemoveAtAndResize(ref contagiousItemProvider.relationships, i);
+                    ArrayUtils.ArrayRemoveAtAndResize(ref ContagiousItemProvider.relationships, i);
                 }
             }
             for (int i = 0; i < itemsToCorrupt.Length; i++)
             {
-                ArrayUtils.ArrayAppend(ref contagiousItemProvider.relationships, new ItemDef.Pair
+                ArrayUtils.ArrayAppend(ref ContagiousItemProvider.relationships, new ItemDef.Pair
                 {
                     itemDef1 = itemsToCorrupt[i],
                     itemDef2 = itemDef
                 });
             }
-            return itemDef;
         }
     }
 }

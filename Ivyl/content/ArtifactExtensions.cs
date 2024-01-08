@@ -28,18 +28,20 @@ namespace IvyLibrary
             return artifactDef;
         }
 
-        /*public static TArtifactDef SetRequiredUnlockable<TArtifactDef>(this TArtifactDef artifactDef, UnlockableDef requiredUnlockable) where TArtifactDef : ArtifactDef
-        {
-            artifactDef.unlockableDef = requiredUnlockable;
-            return artifactDef;
-        }*/
-
         public static TArtifactDef SetArtifactCode<TArtifactDef>(this TArtifactDef artifactDef, ArtifactCode artifactCode) where TArtifactDef : ArtifactDef
         {
-            ArtifactCodeAPI.artifactCodes.RemoveAll(x => x.Item1 == artifactDef);
-            R2API.ScriptableObjects.ArtifactCode _artifactCode = artifactCode.GetInstance();
-            ArtifactCodeAPI.AddCode(artifactDef, _artifactCode);
-            UnityEngine.Object.Destroy(_artifactCode);
+            for (int i = ArtifactCodeAPI.artifactCodes.Count - 1; i >= 0; i--)
+            {
+                var code = ArtifactCodeAPI.artifactCodes[i];
+                if (code.Item1 == artifactDef)
+                {
+                    UnityEngine.Object.Destroy(code.Item2);
+                    ArtifactCodeAPI.artifactCodes.RemoveAt(i);
+                }
+            }
+            Sha256HashAsset hashAsset = ScriptableObject.CreateInstance<Sha256HashAsset>();
+            hashAsset.value = artifactCode.CreateCodeHash();
+            ArtifactCodeAPI.AddCode(artifactDef, hashAsset);
             return artifactDef;
         }
 
@@ -61,7 +63,7 @@ namespace IvyLibrary
         {
             if (artifactEnabledActions.TryGetValue(artifactDef, out (Action onEnabledAction, Action onDisabledAction) enabledActions))
             {
-                enabledActions.onEnabledAction();
+                enabledActions.onEnabledAction?.Invoke();
             }
         }
 
@@ -69,7 +71,7 @@ namespace IvyLibrary
         {
             if (artifactEnabledActions.TryGetValue(artifactDef, out (Action onEnabledAction, Action onDisabledAction) enabledActions))
             {
-                enabledActions.onDisabledAction();
+                enabledActions.onDisabledAction?.Invoke();
             }
         }
     }

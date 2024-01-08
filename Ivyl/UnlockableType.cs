@@ -55,6 +55,7 @@ namespace IvyLibrary
 		{
 			return a.Equals(b);
 		}
+
 		public static bool operator !=(UnlockableType a, UnlockableType b)
 		{
 			return !a.Equals(b);

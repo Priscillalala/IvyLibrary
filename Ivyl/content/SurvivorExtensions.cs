@@ -25,12 +25,6 @@ namespace IvyLibrary
             return survivorDef;
         }
 
-        /*public static TSurvivorDef SetRequiredUnlockable<TSurvivorDef>(this TSurvivorDef survivorDef, UnlockableDef requiredUnlockable) where TSurvivorDef : SurvivorDef
-        {
-            survivorDef.unlockableDef = requiredUnlockable;
-            return survivorDef;
-        }*/
-
         public static TSurvivorDef SetPrimaryColor<TSurvivorDef>(this TSurvivorDef survivorDef, Color primaryColor) where TSurvivorDef : SurvivorDef
         {
             survivorDef.primaryColor = primaryColor;

@@ -8,6 +8,8 @@ using UnityEngine;
 using RoR2.ContentManagement;
 using HG;
 using UnityEngine.AddressableAssets;
+using System.Runtime.CompilerServices;
+using System.Collections;
 
 namespace IvyLibrary
 {
@@ -31,13 +33,31 @@ namespace IvyLibrary
             return sceneDef;
         }
 
+        public static IEnumerator SetPreviewTextureAsync(this SceneDef sceneDef, Texture previewTexture)
+        {
+            var matBazaarSeerGolemplains = Addressables.LoadAssetAsync<Material>("RoR2/Base/bazaar/matBazaarSeerGolemplains.mat");
+            if (!matBazaarSeerGolemplains.IsDone)
+            {
+                yield return matBazaarSeerGolemplains;
+            }
+            SetPreviewTextureImpl(sceneDef, previewTexture, matBazaarSeerGolemplains.Result);
+        }
+
+        [Obsolete($"{nameof(SetPreviewTexture)} is not asynchronous and may stall loading. {nameof(SetPreviewTextureAsync)} is preferred.", false)]
         public static TSceneDef SetPreviewTexture<TSceneDef>(this TSceneDef sceneDef, Texture previewTexture) where TSceneDef : SceneDef
         {
-            if (sceneDef.previewTexture = previewTexture)
+            SetPreviewTextureImpl(sceneDef, previewTexture, Addressables.LoadAssetAsync<Material>("RoR2/Base/bazaar/matBazaarSeerGolemplains.mat").WaitForCompletion());
+            return sceneDef;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void SetPreviewTextureImpl(SceneDef sceneDef, Texture previewTexture, Material matBazaarSeerGolemplains)
+        {
+            if ((sceneDef.previewTexture = previewTexture) != null)
             {
                 if (!sceneDef.portalMaterial)
                 {
-                    sceneDef.portalMaterial = new Material(Addressables.LoadAssetAsync<Material>("RoR2/Base/bazaar/matBazaarSeerGolemplains.mat").WaitForCompletion());
+                    sceneDef.portalMaterial = new Material(matBazaarSeerGolemplains);
                     sceneDef.portalMaterial.name = "matBazaarSeer" + sceneDef.cachedName;
                 }
                 sceneDef.portalMaterial.SetTexture("_MainTex", previewTexture);
@@ -47,7 +67,6 @@ namespace IvyLibrary
                 UnityEngine.Object.Destroy(sceneDef.portalMaterial);
                 sceneDef.portalMaterial = null;
             }
-            return sceneDef;
         }
 
         public static TSceneDef SetLogbookDioramaPrefab<TSceneDef>(this TSceneDef sceneDef, GameObject logbookDioramaPrefab) where TSceneDef : SceneDef

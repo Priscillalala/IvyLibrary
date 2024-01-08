@@ -30,7 +30,7 @@ namespace IvyLibrary
     {
         public static void PopulateNetworkedObjectAssetIds(this ContentPack contentPack)
         {
-            static void PopulateAssetIds(NamedAssetCollection<GameObject> assets, string contentIdentifier, string collectionIdentifier, StringBuilder stringBuilder, HashAlgorithm hashAlgorithm)
+            static void PopulateAssetIds(NamedAssetCollection<GameObject> assets, string contentIdentifier, string collectionIdentifier, StringBuilder stringBuilder, HashAlgorithm hasher)
             {
                 for (int i = 0; i < assets.Length; i++)
                 {
@@ -38,7 +38,7 @@ namespace IvyLibrary
                     if (assetInfo.asset.TryGetComponent(out NetworkIdentity networkIdentity) && !networkIdentity.assetId.IsValid())
                     {
                         stringBuilder.Clear();
-                        foreach (byte b in hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(assetInfo.assetName + contentIdentifier + collectionIdentifier)))
+                        foreach (byte b in hasher.ComputeHash(Encoding.UTF8.GetBytes(assetInfo.assetName + contentIdentifier + collectionIdentifier)))
                         {
                             stringBuilder.Append(b.ToString("x2"));
                         }
@@ -47,13 +47,13 @@ namespace IvyLibrary
                 }
             }
             StringBuilder stringBuilder = new StringBuilder(32);
-            using (MD5 hashAlgorithm = MD5.Create())
+            using (MD5 hasher = MD5.Create())
             {
-                PopulateAssetIds(contentPack.bodyPrefabs, contentPack.identifier, nameof(ContentPack.bodyPrefabs), stringBuilder, hashAlgorithm);
-                PopulateAssetIds(contentPack.masterPrefabs, contentPack.identifier, nameof(ContentPack.masterPrefabs), stringBuilder, hashAlgorithm);
-                PopulateAssetIds(contentPack.projectilePrefabs, contentPack.identifier, nameof(ContentPack.projectilePrefabs), stringBuilder, hashAlgorithm);
-                PopulateAssetIds(contentPack.networkedObjectPrefabs, contentPack.identifier, nameof(ContentPack.networkedObjectPrefabs), stringBuilder, hashAlgorithm);
-                PopulateAssetIds(contentPack.gameModePrefabs, contentPack.identifier, nameof(ContentPack.gameModePrefabs), stringBuilder, hashAlgorithm);
+                PopulateAssetIds(contentPack.bodyPrefabs, contentPack.identifier, nameof(ContentPack.bodyPrefabs), stringBuilder, hasher);
+                PopulateAssetIds(contentPack.masterPrefabs, contentPack.identifier, nameof(ContentPack.masterPrefabs), stringBuilder, hasher);
+                PopulateAssetIds(contentPack.projectilePrefabs, contentPack.identifier, nameof(ContentPack.projectilePrefabs), stringBuilder, hasher);
+                PopulateAssetIds(contentPack.networkedObjectPrefabs, contentPack.identifier, nameof(ContentPack.networkedObjectPrefabs), stringBuilder, hasher);
+                PopulateAssetIds(contentPack.gameModePrefabs, contentPack.identifier, nameof(ContentPack.gameModePrefabs), stringBuilder, hasher);
             }
         }
 

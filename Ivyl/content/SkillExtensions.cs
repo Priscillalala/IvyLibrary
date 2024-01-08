@@ -102,11 +102,5 @@ namespace IvyLibrary
             _(skillDef);
             return skillDef;
         }
-
-        /*public static TSkillDef AddToSkillFamily<TSkillDef>(this TSkillDef skillDef, SkillFamily skillFamily, UnlockableDef requiredUnlockable = null) where TSkillDef : SkillDef
-        {
-            skillFamily.AddSkill(skillDef, requiredUnlockable);
-            return skillDef;
-        }*/
     }
 }

@@ -3,6 +3,7 @@ using RoR2.ContentManagement;
 using System;
 using System.Collections;
 using BepInEx;
+using System.Runtime.CompilerServices;
 
 namespace IvyLibrary
 {
@@ -29,7 +30,8 @@ namespace IvyLibrary
             ContentManager.collectContentPackProviders += add => add(this);
         }
 
-        protected virtual IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual IEnumerator LoadStaticContentAsyncImpl(LoadStaticContentAsyncArgs args)
         {
             if (loadStaticContentAsync != null)
             {
@@ -41,7 +43,8 @@ namespace IvyLibrary
             }
         }
 
-        protected virtual IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual IEnumerator GenerateContentPackAsyncImpl(GetContentPackAsyncArgs args)
         {
             if (generateContentPackAsync != null)
             {
@@ -54,7 +57,8 @@ namespace IvyLibrary
             ContentPack.Copy(Content, args.output);
         }
 
-        protected virtual IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        protected virtual IEnumerator FinalizeAsyncImpl(FinalizeAsyncArgs args)
         {
             if (finalizeAsync != null)
             {
@@ -67,11 +71,11 @@ namespace IvyLibrary
             Content.PopulateNetworkedObjectAssetIds();
         }
 
-        IEnumerator IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs args) => LoadStaticContentAsync(args);
+        IEnumerator IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs args) => LoadStaticContentAsyncImpl(args);
 
-        IEnumerator IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs args) => GenerateContentPackAsync(args);
+        IEnumerator IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs args) => GenerateContentPackAsyncImpl(args);
 
-        IEnumerator IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs args) => FinalizeAsync(args);
+        IEnumerator IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs args) => FinalizeAsyncImpl(args);
     }
 
     public abstract class BaseContentPlugin<TInstance> : BaseContentPlugin where TInstance : BaseContentPlugin<TInstance>

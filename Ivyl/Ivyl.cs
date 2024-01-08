@@ -19,10 +19,11 @@ using BepInEx.Bootstrap;
 using HG.GeneralSerializer;
 using UnityEngine.Rendering;
 using UnityEngine.Networking;
-using System.Threading.Tasks;
 using BepInEx.Configuration;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using System.Collections;
+using System.Runtime.CompilerServices;
+using ThreeEyedGames;
 
 [module: UnverifiableCode]
 #pragma warning disable
@@ -118,15 +119,7 @@ namespace IvyLibrary
             return itemDisplay;
         }
 
-        public static SkillFamily FindSkillFamily(GameObject bodyPrefab, SkillSlot slot)
-        {
-            if (bodyPrefab.TryGetComponent(out SkillLocator skillLocator))
-            {
-                return skillLocator.GetSkill(slot)?.skillFamily;
-            }
-            return null;
-        }
-
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float StackScaling(float baseValue, float stackValue, int stack)
         {
             if (stack > 0)
@@ -136,6 +129,7 @@ namespace IvyLibrary
             return 0f;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int StackScaling(int baseValue, int stackValue, int stack)
         {
             if (stack > 0)
@@ -150,6 +144,7 @@ namespace IvyLibrary
             return new AssetBundleRequest<T>(request);
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AsyncOperationHandle LoadAddressableAssetAsync<TObject>(object key, out AsyncOperationHandle<TObject> handle)
         {
             return handle = Addressables.LoadAssetAsync<TObject>(key);
@@ -174,26 +169,31 @@ namespace IvyLibrary
             });
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AssetBundleRequest LoadAssetAsync<T>(this AssetBundle assetBundle, string name, out AssetBundleRequest<T> request) where T : UnityEngine.Object
         {
             return request = assetBundle.LoadAssetAsync<T>(name).Convert<T>();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Value<T>(this ConfigFile config, string section, string key, T defaultValue, string description)
         {
             return config.Bind(section, key, defaultValue, description).Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Value<T>(this ConfigFile config, string section, string key, T defaultValue, ConfigDescription configDescription = null)
         {
             return config.Bind(section, key, defaultValue, configDescription).Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Value<T>(this ConfigFile config, ConfigDefinition configDefinition, T defaultValue, ConfigDescription configDescription = null)
         {
             return config.Bind(configDefinition, defaultValue, configDescription).Value;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsModLoaded(string guid) => Chainloader.PluginInfos.ContainsKey(guid);
 
         public static void Add<TAsset>(this NamedAssetCollection<TAsset> assetCollection, TAsset newAsset)
@@ -317,6 +317,12 @@ namespace IvyLibrary
             return ref AddDisplayRule(idrs, itemDisplay, new ItemDisplayTransform(childName, localPos, localAngles, localScale));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void AddComponent<T>(this GameObject gameObject, out T component) where T : Component
+        {
+            component = gameObject.AddComponent<T>();
+        }
+
         public static bool TryModifyFieldValue<T>(this EntityStateConfiguration entityStateConfiguration, string fieldName, T value)
         {
             ref SerializedField serializedField = ref entityStateConfiguration.serializedFieldsCollection.GetOrCreateField(fieldName);
@@ -334,6 +340,7 @@ namespace IvyLibrary
             return false;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool TryFind(this Transform transform, string n, out Transform child)
         {
             return child = transform.Find(n);
@@ -435,45 +442,105 @@ namespace IvyLibrary
             }
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AssetBundle LoadAssetBundle(this BaseUnityPlugin plugin, string relativePath)
         {
             return AssetBundle.LoadFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AssetBundleCreateRequest LoadAssetBundleAsync(this BaseUnityPlugin plugin, string relativePath)
         {
             return AssetBundle.LoadFromFileAsync(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
         }
 
-        public static ArtifactCompoundDef FindArtifactCompoundDef(this ArtifactCompound artifactCompound)
+        public static IEnumerator SetupArtifactFormulaDisplayAsync(ArtifactFormulaDisplay artifactFormulaDisplay, ArtifactCode artifactCode)
         {
-            return artifactCompound switch
+            List<AsyncOperationHandle> loadArtifactCompoundsOperations = new List<AsyncOperationHandle>
             {
-                ArtifactCompound.Circle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdCircle.asset").WaitForCompletion(),
-                ArtifactCompound.Triangle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdTriangle.asset").WaitForCompletion(),
-                ArtifactCompound.Diamond => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdDiamond.asset").WaitForCompletion(),
-                ArtifactCompound.Square => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdSquare.asset").WaitForCompletion(),
-                ArtifactCompound.Empty => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdEmpty.asset").WaitForCompletion(),
-                _ => ArtifactCodeAPI.artifactCompounds.FirstOrDefault(x => x.value == (int)artifactCompound)
+                FindArtifactCompoundDefAsync(artifactCode.topRow.Item1),
+                FindArtifactCompoundDefAsync(artifactCode.topRow.Item2),
+                FindArtifactCompoundDefAsync(artifactCode.topRow.Item3),
+                FindArtifactCompoundDefAsync(artifactCode.middleRow.Item1),
+                FindArtifactCompoundDefAsync(artifactCode.middleRow.Item2),
+                FindArtifactCompoundDefAsync(artifactCode.middleRow.Item3),
+                FindArtifactCompoundDefAsync(artifactCode.bottomRow.Item1),
+                FindArtifactCompoundDefAsync(artifactCode.bottomRow.Item2),
+                FindArtifactCompoundDefAsync(artifactCode.bottomRow.Item3),
+            };
+            var loadArtifactCompounds = Addressables.ResourceManager.CreateGenericGroupOperation(loadArtifactCompoundsOperations);
+            if (!loadArtifactCompounds.IsDone)
+            {
+                yield return loadArtifactCompounds;
+            }
+
+            artifactFormulaDisplay.artifactCompoundDisplayInfos = new[]
+            {
+                GetDecalInfo("Slot 1,1"),
+                GetDecalInfo("Slot 1,2"),
+                GetDecalInfo("Slot 1,3"),
+                GetDecalInfo("Slot 2,1"),
+                GetDecalInfo("Slot 2,2"),
+                GetDecalInfo("Slot 2,3"),
+                GetDecalInfo("Slot 3,1"),
+                GetDecalInfo("Slot 3,2"),
+                GetDecalInfo("Slot 3,3"),
+            };
+
+            for (int i = 0; i < loadArtifactCompounds.Result.Count; i++)
+            {
+                artifactFormulaDisplay.artifactCompoundDisplayInfos[i].artifactCompoundDef = (ArtifactCompoundDef)loadArtifactCompounds.Result[i].Result;
+            }
+
+            static AsyncOperationHandle<ArtifactCompoundDef> FindArtifactCompoundDefAsync(ArtifactCompound artifactCompound) => artifactCompound switch
+            {
+                ArtifactCompound.Circle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdCircle.asset"),
+                ArtifactCompound.Triangle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdTriangle.asset"),
+                ArtifactCompound.Diamond => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdDiamond.asset"),
+                ArtifactCompound.Square => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdSquare.asset"),
+                ArtifactCompound.Empty => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdEmpty.asset"),
+                _ => ArtifactCodeAPI.artifactCompounds.FirstOrDefault(x => x.value == (int)artifactCompound) is var artifactCompoundDef && artifactCompoundDef 
+                ? Addressables.ResourceManager.CreateCompletedOperation(artifactCompoundDef, null) 
+                : throw new ArgumentOutOfRangeException(nameof(artifactCompound))
+            };
+
+            ArtifactFormulaDisplay.ArtifactCompoundDisplayInfo GetDecalInfo(string decalPath) => new ArtifactFormulaDisplay.ArtifactCompoundDisplayInfo
+            {
+                decal = artifactFormulaDisplay.transform.Find(decalPath)?.GetComponent<Decal>()
             };
         }
 
-        public static async Task<ArtifactCompoundDef> FindArtifactCompoundDefAsync(this ArtifactCompound artifactCompound)
+        [Obsolete($"{nameof(SetupArtifactFormulaDisplay)} is not asynchronous and may stall loading. {nameof(SetupArtifactFormulaDisplayAsync)} is preferred.", false)]
+        public static void SetupArtifactFormulaDisplay(ArtifactFormulaDisplay artifactFormulaDisplay, ArtifactCode artifactCode)
         {
-            return artifactCompound switch
+            artifactFormulaDisplay.artifactCompoundDisplayInfos = new[]
             {
-                ArtifactCompound.Circle => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdCircle.asset").Task,
-                ArtifactCompound.Triangle => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdTriangle.asset").Task,
-                ArtifactCompound.Diamond => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdDiamond.asset").Task,
-                ArtifactCompound.Square => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdSquare.asset").Task,
-                ArtifactCompound.Empty => await Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdEmpty.asset").Task,
-                _ => ArtifactCodeAPI.artifactCompounds.FirstOrDefault(x => x.value == (int)artifactCompound)
+                GetDisplayInfo(artifactCode.topRow.Item1, "Slot 1,1"),
+                GetDisplayInfo(artifactCode.topRow.Item2, "Slot 1,2"),
+                GetDisplayInfo(artifactCode.topRow.Item3, "Slot 1,3"),
+                GetDisplayInfo(artifactCode.middleRow.Item1, "Slot 2,1"),
+                GetDisplayInfo(artifactCode.middleRow.Item2, "Slot 2,2"),
+                GetDisplayInfo(artifactCode.middleRow.Item3, "Slot 2,3"),
+                GetDisplayInfo(artifactCode.bottomRow.Item1, "Slot 3,1"),
+                GetDisplayInfo(artifactCode.bottomRow.Item2, "Slot 3,2"),
+                GetDisplayInfo(artifactCode.bottomRow.Item3, "Slot 3,3"),
             };
-        }
 
-        public static bool TryFindArtifactCompoundDef(ArtifactCompound artifactCompound, out ArtifactCompoundDef artifactCompoundDef)
-        {
-            return artifactCompoundDef = FindArtifactCompoundDef(artifactCompound);
+            ArtifactFormulaDisplay.ArtifactCompoundDisplayInfo GetDisplayInfo(ArtifactCompound artifactCompound, string decalPath) => new ArtifactFormulaDisplay.ArtifactCompoundDisplayInfo
+            {
+                artifactCompoundDef = artifactCompound switch
+                {
+                    ArtifactCompound.Circle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdCircle.asset").WaitForCompletion(),
+                    ArtifactCompound.Triangle => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdTriangle.asset").WaitForCompletion(),
+                    ArtifactCompound.Diamond => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdDiamond.asset").WaitForCompletion(),
+                    ArtifactCompound.Square => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdSquare.asset").WaitForCompletion(),
+                    ArtifactCompound.Empty => Addressables.LoadAssetAsync<ArtifactCompoundDef>("RoR2/Base/ArtifactCompounds/acdEmpty.asset").WaitForCompletion(),
+                    _ => ArtifactCodeAPI.artifactCompounds.FirstOrDefault(x => x.value == (int)artifactCompound) is var artifactCompoundDef && artifactCompoundDef
+                    ? artifactCompoundDef
+                    : throw new ArgumentOutOfRangeException(nameof(artifactCompound))
+                },
+                decal = artifactFormulaDisplay.transform.Find(decalPath)?.GetComponent<Decal>()
+            };
         }
     }
 }

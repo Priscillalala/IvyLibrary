@@ -46,12 +46,6 @@ namespace IvyLibrary
             return equipmentDef;
         }
 
-        /*public static TEquipmentDef SetRequiredUnlockable<TEquipmentDef>(this TEquipmentDef equipmentDef, UnlockableDef requiredUnlockable) where TEquipmentDef : EquipmentDef
-        {
-            equipmentDef.unlockableDef = requiredUnlockable;
-            return equipmentDef;
-        }*/
-
         public static TEquipmentDef SetPassiveBuff<TEquipmentDef>(this TEquipmentDef equipmentDef, BuffDef passiveBuff) where TEquipmentDef : EquipmentDef
         {
             equipmentDef.passiveBuffDef = passiveBuff;

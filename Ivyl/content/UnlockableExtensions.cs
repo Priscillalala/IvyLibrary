@@ -24,12 +24,5 @@ namespace IvyLibrary
             unlockableDef.nameToken = nameToken;
             return unlockableDef;
         }
-
-        /*public static TUnlockableDef SetUnlockStringFunctions<TUnlockableDef>(this TUnlockableDef unlockableDef, Func<string> howToUnlockStringFunction, Func<string> unlockedStringFunction) where TUnlockableDef : UnlockableDef
-        {
-            unlockableDef.getHowToUnlockString = howToUnlockStringFunction;
-            unlockableDef.getUnlockedString = unlockedStringFunction;
-            return unlockableDef;
-        }*/
     }
 }
