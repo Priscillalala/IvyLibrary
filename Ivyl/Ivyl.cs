@@ -135,11 +135,6 @@ namespace IvyLibrary
             return 0;
         }
 
-        public static AssetBundleRequest<T> Convert<T>(this AssetBundleRequest request) where T : UnityEngine.Object
-        {
-            return new AssetBundleRequest<T>(request);
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AsyncOperationHandle LoadAddressableAssetAsync<TObject>(object key, out AsyncOperationHandle<TObject> handle)
         {
@@ -166,9 +161,35 @@ namespace IvyLibrary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static AssetBundle LoadAssetBundle(this BaseUnityPlugin plugin, string relativePath)
+        {
+            return AssetBundle.LoadFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static AssetBundleCreateRequest LoadAssetBundleAsync(this BaseUnityPlugin plugin, string relativePath)
+        {
+            return AssetBundle.LoadFromFileAsync(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
+        }
+
+        public static AssetBundleRequest<T> Convert<T>(this AssetBundleRequest request) where T : UnityEngine.Object
+        {
+            return new AssetBundleRequest<T>(request);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AssetBundleRequest LoadAssetAsync<T>(this AssetBundle assetBundle, string name, out AssetBundleRequest<T> request) where T : UnityEngine.Object
         {
             return request = assetBundle.LoadAssetAsync<T>(name).Convert<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ConfigFile CreateConfigFile(this BaseUnityPlugin plugin, string relativePath, bool saveOnInit = true)
+        {
+            return new ConfigFile(
+                System.IO.Path.Combine(Paths.ConfigPath, System.IO.Path.ChangeExtension(relativePath, ".cfg")),
+                saveOnInit,
+                plugin.Info.Metadata);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -187,6 +208,30 @@ namespace IvyLibrary
         public static T Value<T>(this ConfigFile config, ConfigDefinition configDefinition, T defaultValue, ConfigDescription configDescription = null)
         {
             return config.Bind(configDefinition, defaultValue, configDescription).Value;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ConfigEntry<T> Bind<T>(this ConfigFile config, ref T value, string section, string key, string description)
+        {
+            ConfigEntry<T> result = config.Bind(section, key, value, description);
+            value = result.Value;
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ConfigEntry<T> Bind<T>(this ConfigFile config, ref T value, string section, string key, ConfigDescription configDescription = null)
+        {
+            ConfigEntry<T> result = config.Bind(section, key, value, configDescription);
+            value = result.Value;
+            return result;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static ConfigEntry<T> Bind<T>(this ConfigFile config, ref T value, ConfigDefinition configDefinition, ConfigDescription configDescription = null)
+        {
+            ConfigEntry<T> result = config.Bind(configDefinition, value, configDescription);
+            value = result.Value;
+            return result;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -436,18 +481,6 @@ namespace IvyLibrary
             {
                 ArrayUtils.ArrayRemoveAtAndResize(ref healthComponent.onTakeDamageReceivers, index);
             }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AssetBundle LoadAssetBundle(this BaseUnityPlugin plugin, string relativePath)
-        {
-            return AssetBundle.LoadFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AssetBundleCreateRequest LoadAssetBundleAsync(this BaseUnityPlugin plugin, string relativePath)
-        {
-            return AssetBundle.LoadFromFileAsync(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
         }
 
         public static IEnumerator SetupArtifactFormulaDisplayAsync(ArtifactFormulaDisplay artifactFormulaDisplay, ArtifactCode artifactCode)

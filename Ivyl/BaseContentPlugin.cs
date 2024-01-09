@@ -1,4 +1,5 @@
-﻿using RoR2.ContentManagement;
+﻿using RoR2;
+using RoR2.ContentManagement;
 using System.Collections;
 using BepInEx;
 using System.Runtime.CompilerServices;
@@ -7,7 +8,7 @@ using System;
 namespace IvyLibrary
 {
     /// <summary>
-    /// A specialized <see cref="BaseUnityPlugin"/> that generates a <see cref="ContentPack"/> implements <see cref="IContentPackProvider"/>; comparable to <see cref="RoR2.RoR2Content"/>.
+    /// A specialized <see cref="BaseUnityPlugin"/> that generates a <see cref="ContentPack"/> implements <see cref="IContentPackProvider"/>; comparable to <see cref="RoR2Content"/>.
     /// </summary>
     public abstract class BaseContentPlugin : BaseUnityPlugin, IContentPackProvider
     {
