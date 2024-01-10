@@ -4,6 +4,8 @@ using System.Collections;
 using BepInEx;
 using System.Runtime.CompilerServices;
 using System;
+using HG.Coroutines;
+using HG;
 
 namespace IvyLibrary
 {
@@ -24,15 +26,15 @@ namespace IvyLibrary
         public delegate IEnumerator FinalizeAsyncDelegate(FinalizeAsyncArgs args);
 
         /// <summary>
-        /// Subscribers are yielded in order during <see cref="IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs)"/>.
+        /// Subscribers are yielded in parallel during <see cref="IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs)"/>.
         /// </summary>
         public event LoadStaticContentAsyncDelegate loadStaticContentAsync;
         /// <summary>
-        /// Subscribers are yielded in order during <see cref="IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs)"/>.
+        /// Subscribers are yielded in parallel during <see cref="IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs)"/>.
         /// </summary>
         public event GenerateContentPackAsyncDelegate generateContentPackAsync;
         /// <summary>
-        /// Subscribers are yielded in order during <see cref="IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs)"/>.
+        /// Subscribers are yielded in parallel during <see cref="IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs)"/>.
         /// </summary>
         public event FinalizeAsyncDelegate finalizeAsync;
 
@@ -49,19 +51,27 @@ namespace IvyLibrary
         /// Implementation of <see cref="IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs)"/>.
         /// </summary>
         /// <remarks>
-        /// The default implementation invokes <see cref="loadStaticContentAsync"/> and reports progress for each subscriber. This behavior can be overridden.
+        /// The default implementation invokes <see cref="loadStaticContentAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>. This behavior can be overridden.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual IEnumerator LoadStaticContentAsyncImpl(LoadStaticContentAsyncArgs args)
+        protected virtual IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
         {
             if (loadStaticContentAsync != null)
             {
-                Delegate[] invocationList = loadStaticContentAsync.GetInvocationList();
-                int length = invocationList.Length;
-                for (int i = 0; i < length; i++)
+                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(args.progressReceiver);
+                foreach (LoadStaticContentAsyncDelegate func in loadStaticContentAsync.GetInvocationList())
                 {
-                    yield return ((LoadStaticContentAsyncDelegate)invocationList[i])?.Invoke(args);
-                    args.ReportProgress((float)(i + 1) / length);
+                    if (func != null)
+                    {
+                        ReadableProgress<float> readableProgress = new ReadableProgress<float>();
+                        parallelProgressCoroutine.Add(
+                            func(new LoadStaticContentAsyncArgs(readableProgress, args.peerLoadInfos)),
+                            readableProgress);
+                    }
+                }
+                while (parallelProgressCoroutine.MoveNext())
+                {
+                    yield return parallelProgressCoroutine.Current;
                 }
                 loadStaticContentAsync = null;
             }
@@ -71,19 +81,27 @@ namespace IvyLibrary
         /// Implementation of <see cref="IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs)"/>.
         /// </summary>
         /// <remarks>
-        /// The default implementation invokes <see cref="generateContentPackAsync"/> and reports progress for each subscriber, then outputs <see cref="Content"/>. This behavior can be overridden.
+        /// The default implementation invokes <see cref="generateContentPackAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>, then outputs <see cref="Content"/>. This behavior can be overridden.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual IEnumerator GenerateContentPackAsyncImpl(GetContentPackAsyncArgs args)
+        protected virtual IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
         {
             if (generateContentPackAsync != null)
             {
-                Delegate[] invocationList = generateContentPackAsync.GetInvocationList();
-                int length = invocationList.Length;
-                for (int i = 0; i < length; i++)
+                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(args.progressReceiver);
+                foreach (GenerateContentPackAsyncDelegate func in generateContentPackAsync.GetInvocationList())
                 {
-                    yield return ((GenerateContentPackAsyncDelegate)invocationList[i])?.Invoke(args);
-                    args.ReportProgress((float)(i + 1) / length);
+                    if (func != null)
+                    {
+                        ReadableProgress<float> readableProgress = new ReadableProgress<float>();
+                        parallelProgressCoroutine.Add(
+                            func(new GetContentPackAsyncArgs(readableProgress, args.output, args.peerLoadInfos, args.retriesRemaining)),
+                            readableProgress);
+                    }
+                }
+                while (parallelProgressCoroutine.MoveNext())
+                {
+                    yield return parallelProgressCoroutine.Current;
                 }
             }
             ContentPack.Copy(Content, args.output);
@@ -93,30 +111,38 @@ namespace IvyLibrary
         /// Implementation of <see cref="IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs)"/>.
         /// </summary>
         /// <remarks>
-        /// The default implementation invokes <see cref="finalizeAsync"/> and reports progress for each subscriber, then populates the asset ids of networked objects. This behavior can be overridden.
+        /// The default implementation invokes <see cref="finalizeAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>, then populates the asset ids of networked objects in <see cref="Content"/>. This behavior can be overridden.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual IEnumerator FinalizeAsyncImpl(FinalizeAsyncArgs args)
+        protected virtual IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
         {
             generateContentPackAsync = null;
             if (finalizeAsync != null)
             {
-                Delegate[] invocationList = finalizeAsync.GetInvocationList();
-                int length = invocationList.Length;
-                for (int i = 0; i < length; i++)
+                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(args.progressReceiver);
+                foreach (FinalizeAsyncDelegate func in finalizeAsync.GetInvocationList())
                 {
-                    yield return ((FinalizeAsyncDelegate)invocationList[i])?.Invoke(args);
-                    args.ReportProgress((float)(i + 1) / length);
+                    if (func != null)
+                    {
+                        ReadableProgress<float> readableProgress = new ReadableProgress<float>();
+                        parallelProgressCoroutine.Add(
+                            func(new FinalizeAsyncArgs(readableProgress, args.peerLoadInfos, args.finalContentPack)),
+                            readableProgress);
+                    }
+                }
+                while (parallelProgressCoroutine.MoveNext())
+                {
+                    yield return parallelProgressCoroutine.Current;
                 }
                 finalizeAsync = null;
             }
             Content.PopulateNetworkedObjectAssetIds();
         }
 
-        IEnumerator IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs args) => LoadStaticContentAsyncImpl(args);
+        IEnumerator IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs args) => LoadStaticContentAsync(args);
 
-        IEnumerator IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs args) => GenerateContentPackAsyncImpl(args);
+        IEnumerator IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs args) => GenerateContentPackAsync(args);
 
-        IEnumerator IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs args) => FinalizeAsyncImpl(args);
+        IEnumerator IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs args) => FinalizeAsync(args);
     }
 }
