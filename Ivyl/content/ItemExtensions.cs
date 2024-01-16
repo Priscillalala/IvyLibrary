@@ -24,9 +24,9 @@ namespace IvyLibrary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static TItemDef SetItemTier<TItemDef>(this TItemDef itemDef, ItemTier itemTier) where TItemDef : ItemDef
         {
-#pragma warning disable
+#pragma warning disable CS0618 // Type or member is obsolete
             itemDef.deprecatedTier = itemTier;
-#pragma warning restore
+#pragma warning restore CS0618 // Type or member is obsolete
             itemDef._itemTierDef = null;
             return itemDef;
         }

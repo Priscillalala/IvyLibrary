@@ -52,6 +52,9 @@ namespace IvyLibrary
         }
 
         /// <inheritdoc cref="SetActivationState{TSkillDef}(TSkillDef, SerializableEntityStateType, string)"/>
+        /// <remarks>
+        /// <paramref name="activationStateType"/> should inherit from <see cref="EntityState"/>.
+        /// </remarks>
         public static TSkillDef SetActivationState<TSkillDef>(this TSkillDef skillDef, Type activationStateType, string activationStateMachineName) where TSkillDef : SkillDef
         {
             if (activationStateType == null)

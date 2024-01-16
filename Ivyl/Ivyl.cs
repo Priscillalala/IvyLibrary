@@ -22,9 +22,9 @@ using System.Runtime.CompilerServices;
 using ThreeEyedGames;
 
 [module: UnverifiableCode]
-#pragma warning disable
-[assembly: SecurityPermission(System.Security.Permissions.SecurityAction.RequestMinimum, SkipVerification = true)]
-#pragma warning restore
+#pragma warning disable CS0618 // Type or member is obsolete
+[assembly: SecurityPermission(SecurityAction.RequestMinimum, SkipVerification = true)]
+#pragma warning restore CS0618 // Type or member is obsolete
 [assembly: HG.Reflection.SearchableAttribute.OptIn]
 
 namespace IvyLibrary

@@ -85,7 +85,9 @@ namespace IvyLibrary
         }
 
         /// <inheritdoc cref="SetGameOverControllerState{TGameEndingDef}(TGameEndingDef, SerializableEntityStateType)"/>
-        /// <returns></returns>
+        /// <remarks>
+        /// <paramref name="gameOverControllerStateType"/> should inherit from <see cref="EntityState"/>.
+        /// </remarks>
         public static TGameEndingDef SetGameOverControllerState<TGameEndingDef>(this TGameEndingDef gameEndingDef, Type gameOverControllerStateType) where TGameEndingDef : GameEndingDef
         {
             if (gameOverControllerStateType == null)

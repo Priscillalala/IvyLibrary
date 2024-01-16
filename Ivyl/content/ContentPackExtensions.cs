@@ -122,37 +122,20 @@ namespace IvyLibrary
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string FormatToken(string baseToken, string tokenPrefix)
+        internal static string FormatToken(string baseToken, string tokenPrefix)
         {
             return tokenPrefix + '_' + baseToken;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string FormatAssetIdentifier(string baseIdentifier, string prefix)
+        internal static string FormatAssetIdentifier(string baseIdentifier, string prefix)
         {
             return prefix + '.' + baseIdentifier;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string RevertIdentifier(string identifier, ContentPack contentPack)
+        internal static string GetUnlockableIdentifier(string baseIdentifier, UnlockableType unlockableType)
         {
-            string prefix = GetPrefix(contentPack) + '.';
-            if (identifier.StartsWith(prefix))
-            {
-                return identifier.Substring(prefix.Length);
-            }
-            return identifier;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static string GetUnlockableIdentifier(string baseIdentifier, UnlockableType unlockableType)
-        {
-            /*string prefix = GetPrefix(contentPack);
-            if (baseIdentifier.StartsWith(prefix + '.'))
-            {
-                baseIdentifier = baseIdentifier.Substring(prefix.Length + 1);
-            }
-            baseIdentifier = prefix + '.' + baseIdentifier;*/
             if (!string.IsNullOrWhiteSpace((string)unlockableType))
             {
                 baseIdentifier = (string)unlockableType + '.' + baseIdentifier;
@@ -465,12 +448,14 @@ namespace IvyLibrary
             return (difficulty, DifficultyAPI.AddDifficulty(difficulty, preferPositiveIndex));
         }
 
-        public static EliteWrapper DefineElite(this ContentPack contentPack, string identifier) 
+        public static EliteWrapper DefineElite(this ContentPack contentPack, string identifier)
         {
             (EliteDef elite, EquipmentDef eliteEquipment, BuffDef eliteBuff) = DefineEliteImpl<EliteDef, EquipmentDef, BuffDef>(identifier, contentPack);
-            EliteWrapper result = new EliteWrapper(elite, new List<EliteDef>(), eliteEquipment, eliteBuff);
-            result.registerSubEliteCallback = x => contentPack?.eliteDefs.Add(x);
-            result.subEliteTokenPrefix = GetPrefix(contentPack);
+            EliteWrapper result = new EliteWrapper(elite, new List<EliteDef>(), eliteEquipment, eliteBuff)
+            {
+                registerSubEliteCallback = x => contentPack?.eliteDefs.Add(x),
+                subElitePrefix = GetPrefix(contentPack),
+            };
             return result; 
         }
 
@@ -480,9 +465,11 @@ namespace IvyLibrary
             where TBuffDef : BuffDef
         {
             (TEliteDef elite, TEquipmentDef eliteEquipment, TBuffDef eliteBuff) = DefineEliteImpl<TEliteDef, TEquipmentDef, TBuffDef>(identifier, contentPack);
-            EliteWrapper<TEliteDef, TEquipmentDef, TBuffDef> result = new EliteWrapper<TEliteDef, TEquipmentDef, TBuffDef>(elite, new List<TEliteDef>(), eliteEquipment, eliteBuff);
-            result.registerSubEliteCallback = x => contentPack?.eliteDefs.Add(x);
-            result.subEliteTokenPrefix = GetPrefix(contentPack);
+            EliteWrapper<TEliteDef, TEquipmentDef, TBuffDef> result = new EliteWrapper<TEliteDef, TEquipmentDef, TBuffDef>(elite, new List<TEliteDef>(), eliteEquipment, eliteBuff)
+            {
+                registerSubEliteCallback = x => contentPack?.eliteDefs.Add(x),
+                subElitePrefix = GetPrefix(contentPack)
+            };
             return result;
         }
 
