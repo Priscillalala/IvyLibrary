@@ -60,7 +60,8 @@ namespace IvyLibrary
         /// Set the ramp texture of this elite.
         /// </summary>
         /// <remarks>
-        /// Elite ramp textures are usually 256x8px.
+        /// <para>Elite ramp textures are usually 256x8px.</para>
+        /// <para>The internal implementation of this method uses <see cref="EliteRamp"/>.</para>
         /// </remarks>
         /// <returns>this, to continue a method chain.</returns>
         public TEliteWrapper SetEliteRampTexture(Texture2D eliteRampTexture)

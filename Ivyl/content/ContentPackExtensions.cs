@@ -19,10 +19,26 @@ using UnityEngine.AddressableAssets;
 
 namespace IvyLibrary
 {
+    /// <summary>
+    /// Static extensions for interacting with a <see cref="ContentPack"/>, primarily defining new content. 
+    /// </summary>
     public static class ContentPackExtensions
     {
+        /// <summary>
+        /// Generate unique asset ids for all networked objects in this <see cref="ContentPack"/>.
+        /// </summary>
         public static void PopulateNetworkedObjectAssetIds(this ContentPack contentPack)
         {
+            StringBuilder stringBuilder = new StringBuilder(32);
+            using (MD5 hasher = MD5.Create())
+            {
+                PopulateAssetIds(contentPack.bodyPrefabs, contentPack.identifier, nameof(ContentPack.bodyPrefabs), stringBuilder, hasher);
+                PopulateAssetIds(contentPack.masterPrefabs, contentPack.identifier, nameof(ContentPack.masterPrefabs), stringBuilder, hasher);
+                PopulateAssetIds(contentPack.projectilePrefabs, contentPack.identifier, nameof(ContentPack.projectilePrefabs), stringBuilder, hasher);
+                PopulateAssetIds(contentPack.networkedObjectPrefabs, contentPack.identifier, nameof(ContentPack.networkedObjectPrefabs), stringBuilder, hasher);
+                PopulateAssetIds(contentPack.gameModePrefabs, contentPack.identifier, nameof(ContentPack.gameModePrefabs), stringBuilder, hasher);
+            }
+
             static void PopulateAssetIds(NamedAssetCollection<GameObject> assets, string contentIdentifier, string collectionIdentifier, StringBuilder stringBuilder, HashAlgorithm hasher)
             {
                 for (int i = 0; i < assets.Length; i++)
@@ -39,17 +55,11 @@ namespace IvyLibrary
                     }
                 }
             }
-            StringBuilder stringBuilder = new StringBuilder(32);
-            using (MD5 hasher = MD5.Create())
-            {
-                PopulateAssetIds(contentPack.bodyPrefabs, contentPack.identifier, nameof(ContentPack.bodyPrefabs), stringBuilder, hasher);
-                PopulateAssetIds(contentPack.masterPrefabs, contentPack.identifier, nameof(ContentPack.masterPrefabs), stringBuilder, hasher);
-                PopulateAssetIds(contentPack.projectilePrefabs, contentPack.identifier, nameof(ContentPack.projectilePrefabs), stringBuilder, hasher);
-                PopulateAssetIds(contentPack.networkedObjectPrefabs, contentPack.identifier, nameof(ContentPack.networkedObjectPrefabs), stringBuilder, hasher);
-                PopulateAssetIds(contentPack.gameModePrefabs, contentPack.identifier, nameof(ContentPack.gameModePrefabs), stringBuilder, hasher);
-            }
         }
 
+        /// <summary>
+        /// Add all types that inherit from <see cref="EntityState"/> in <paramref name="assembly"/> to <see cref="ContentPack.entityStateTypes"/>.
+        /// </summary>
         public static void AddEntityStatesFromAssembly(this ContentPack contentPack, Assembly assembly)
         {
             Type[] types = assembly.GetTypes();
@@ -62,6 +72,9 @@ namespace IvyLibrary
             }
         }
 
+        /// <summary>
+        /// Add content from an <see cref="R2APISerializableContentPack"/> to this <see cref="ContentPack"/>.
+        /// </summary>
         public static void AddSerializedContent(this ContentPack contentPack, R2APISerializableContentPack serializableContent)
         {
             typeof(R2APISerializableContentPack).GetMethod("EnsureNoFieldsAreNull", BindingFlags.Instance | BindingFlags.NonPublic).Invoke(serializableContent, null);
@@ -109,6 +122,9 @@ namespace IvyLibrary
             contentPack.entityStateTypes.Add(entityStateTypes.ToArray());
         }
 
+        /// <summary>
+        /// Create an <see cref="EffectDef"/> for <paramref name="effectPrefab"/> and add it to <see cref="ContentPack.effectDefs"/>.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void AddEffectPrefab(this ContentPack contentPack, GameObject effectPrefab)
         {
@@ -152,8 +168,16 @@ namespace IvyLibrary
             }
         }
 
+        /// <summary>
+        /// Defines an <see cref="ExpansionDef"/> for this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Multiple calls on the same <see cref="ContentPack"/> will fail. Additional expansions must be defined manually.
+        /// </remarks>
+        /// <returns>The newly-created <see cref="ExpansionDef"/>.</returns>
         public static ExpansionDef DefineExpansion(this ContentPack contentPack) => DefineExpansion<ExpansionDef>(contentPack);
 
+        /// <inheritdoc cref="DefineExpansion(ContentPack)"/>
         public static TExpansionDef DefineExpansion<TExpansionDef>(this ContentPack contentPack) where TExpansionDef : ExpansionDef
         {
             TExpansionDef expansion = ScriptableObject.CreateInstance<TExpansionDef>();
@@ -169,8 +193,20 @@ namespace IvyLibrary
             return expansion;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="ItemDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the item.
+        /// The item is added to the first <see cref="ExpansionDef"/> in <see cref="ContentPack.expansionDefs"/>, if present.
+        /// The item is added to <see cref="ContentPack.itemDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this item.</param>
+        /// <returns>The newly-created <see cref="ItemDef"/>.</returns>
         public static ItemDef DefineItem(this ContentPack contentPack, string identifier) => DefineItem<ItemDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineItem(ContentPack, string)"/>
         public static TItemDef DefineItem<TItemDef>(this ContentPack contentPack, string identifier) where TItemDef : ItemDef
         {
             TItemDef item = ScriptableObject.CreateInstance<TItemDef>();
@@ -187,8 +223,20 @@ namespace IvyLibrary
             return item;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="EquipmentDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the equipment.
+        /// The equipment is added to the first <see cref="ExpansionDef"/> in <see cref="ContentPack.expansionDefs"/>, if present.
+        /// The equipment is added to <see cref="ContentPack.equipmentDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this equipment.</param>
+        /// <returns>The newly-created <see cref="EquipmentDef"/>.</returns>
         public static EquipmentDef DefineEquipment(this ContentPack contentPack, string identifier) => DefineEquipment<EquipmentDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineEquipment(ContentPack, string)"/>
         public static TEquipmentDef DefineEquipment<TEquipmentDef>(this ContentPack contentPack, string identifier) where TEquipmentDef : EquipmentDef
         {
             TEquipmentDef equipment = ScriptableObject.CreateInstance<TEquipmentDef>();
@@ -207,8 +255,18 @@ namespace IvyLibrary
             return equipment;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="BuffDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// The buff is added to <see cref="ContentPack.buffDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this buff.</param>
+        /// <returns>The newly-created <see cref="BuffDef"/>.</returns>
         public static BuffDef DefineBuff(this ContentPack contentPack, string identifier) => DefineBuff<BuffDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineBuff(ContentPack, string)"/>
         public static TBuffDef DefineBuff<TBuffDef>(this ContentPack contentPack, string identifier) where TBuffDef : BuffDef
         {
             TBuffDef buff = ScriptableObject.CreateInstance<TBuffDef>();
@@ -217,8 +275,20 @@ namespace IvyLibrary
             return buff;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="ArtifactDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the artifact.
+        /// The artifact is added to the first <see cref="ExpansionDef"/> in <see cref="ContentPack.expansionDefs"/>, if present.
+        /// The artifact is added to <see cref="ContentPack.artifactDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this artifact.</param>
+        /// <returns>The newly-created <see cref="ArtifactDef"/>.</returns>
         public static ArtifactDef DefineArtifact(this ContentPack contentPack, string identifier) => DefineArtifact<ArtifactDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineArtifact(ContentPack, string)"/>
         public static TArtifactDef DefineArtifact<TArtifactDef>(this ContentPack contentPack, string identifier) where TArtifactDef : ArtifactDef
         {
             TArtifactDef artifact = ScriptableObject.CreateInstance<TArtifactDef>();
@@ -233,8 +303,19 @@ namespace IvyLibrary
             return artifact;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="SkillDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the skill.
+        /// The skill is added to <see cref="ContentPack.skillDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this skill.</param>
+        /// <returns>The newly-created <see cref="SkillDef"/>.</returns>
         public static SkillDef DefineSkill(this ContentPack contentPack, string identifier) => DefineSkill<SkillDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineSkill(ContentPack, string)"/>
         public static TSceneDef DefineSkill<TSceneDef>(this ContentPack contentPack, string identifier) where TSceneDef : SkillDef
         {
             TSceneDef skill = ScriptableObject.CreateInstance<TSceneDef>();
@@ -249,8 +330,19 @@ namespace IvyLibrary
             return skill;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="GameEndingDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the game ending.
+        /// The game ending is added to <see cref="ContentPack.gameEndingDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this game ending.</param>
+        /// <returns>The newly-created <see cref="GameEndingDef"/>.</returns>
         public static GameEndingDef DefineGameEnding(this ContentPack contentPack, string identifier) => DefineGameEnding<GameEndingDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineGameEnding(ContentPack, string)"/>
         public static TGameEndingDef DefineGameEnding<TGameEndingDef>(this ContentPack contentPack, string identifier) where TGameEndingDef : GameEndingDef
         {
             TGameEndingDef gameEnding = ScriptableObject.CreateInstance<TGameEndingDef>();
@@ -263,8 +355,18 @@ namespace IvyLibrary
             return gameEnding;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="SurfaceDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// The surface is added to <see cref="ContentPack.surfaceDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this surface.</param>
+        /// <returns>The newly-created <see cref="SurfaceDef"/>.</returns>
         public static SurfaceDef DefineSurfaceDef(this ContentPack contentPack, string identifier) => DefineSurfaceDef<SurfaceDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineSurfaceDef(ContentPack, string)"/>
         public static TSurfaceDef DefineSurfaceDef<TSurfaceDef>(this ContentPack contentPack, string identifier) where TSurfaceDef : SurfaceDef
         {
             TSurfaceDef surface = ScriptableObject.CreateInstance<TSurfaceDef>();
@@ -273,8 +375,23 @@ namespace IvyLibrary
             return surface;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="SurvivorDef"/> in this <see cref="ContentPack"/> from the specified <paramref name="bodyPrefab"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the survivor.
+        /// The survivor is added to <see cref="ContentPack.survivorDefs"/>.
+        /// The survivor's body prefab is set to <paramref name="bodyPrefab"/>.
+        /// The survivor's color is inferred from the <paramref name="bodyPrefab"/> color.
+        /// <paramref name="bodyPrefab"/> is given an <see cref="ExpansionRequirementComponent"/> for the first <see cref="ExpansionDef"/> in <see cref="ContentPack.expansionDefs"/>, if present.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this survivor.</param>
+        /// <param name="bodyPrefab">The body prefab of this survivor, with a <see cref="CharacterBody"/> component.</param>
+        /// <returns>The newly-created <see cref="SurvivorDef"/>.</returns>
         public static SurvivorDef DefineSurvivorFromBodyPrefab(this ContentPack contentPack, string identifier, GameObject bodyPrefab) => DefineSurvivorFromBodyPrefab<SurvivorDef>(contentPack, identifier, bodyPrefab);
 
+        /// <inheritdoc cref="DefineSurvivorFromBodyPrefab(ContentPack, string, GameObject)"/>
         public static TSurvivorDef DefineSurvivorFromBodyPrefab<TSurvivorDef>(this ContentPack contentPack, string identifier, GameObject bodyPrefab) where TSurvivorDef : SurvivorDef
         {
             TSurvivorDef survivor = DefineSurvivorImpl<TSurvivorDef>(identifier, contentPack);
@@ -309,8 +426,22 @@ namespace IvyLibrary
             return survivor;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="SkinDef"/> in this <see cref="ContentPack"/> for the specified <paramref name="bodyPrefab"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the skin.
+        /// The root object of the skin is set to the model transform of <paramref name="bodyPrefab"/>.
+        /// The skin is appended to the <paramref name="bodyPrefab"/> <see cref="ModelSkinController"/>.
+        /// If the <see cref="ModelSkinController"/> is missing or has no skins, the new skin is set as the default skin.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this skin.</param>
+        /// <param name="bodyPrefab">The body prefab to recieve this skin, with a valid <see cref="ModelLocator"/> component.</param>
+        /// <returns>The newly-created <see cref="SkinDef"/>.</returns>
         public static SkinDef DefineSkinForBodyPrefab(this ContentPack contentPack, string identifier, GameObject bodyPrefab) => DefineSkinForBodyPrefab<SkinDef>(contentPack, identifier, bodyPrefab);
 
+        /// <inheritdoc cref="DefineSkinForBodyPrefab(ContentPack, string, GameObject)"/>
         public static TSkinDef DefineSkinForBodyPrefab<TSkinDef>(this ContentPack contentPack, string identifier, GameObject bodyPrefab) where TSkinDef : SkinDef
         {
             if (!bodyPrefab.TryGetComponent(out ModelLocator modelLocator) || !modelLocator.modelTransform)
@@ -332,8 +463,18 @@ namespace IvyLibrary
             return skin;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="SkinDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the skin.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this skin.</param>
+        /// <returns>The newly-created <see cref="SkinDef"/>.</returns>
         public static SkinDef DefineSkin(this ContentPack contentPack, string identifier) => DefineSkin<SkinDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineSkin(ContentPack, string)"/>
         public static TSkinDef DefineSkin<TSkinDef>(this ContentPack contentPack, string identifier) where TSkinDef : SkinDef
         {
             static void _(On.RoR2.SkinDef.orig_Awake orig, SkinDef self) { }
@@ -349,8 +490,19 @@ namespace IvyLibrary
             return skin;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="ItemTierDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="ItemTierDef.tier"/> is set to <see cref="ItemTier.AssignedAtRuntime"/>.
+        /// The item tier is added to <see cref="ContentPack.itemTierDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this item tier.</param>
+        /// <returns>The newly-created <see cref="ItemTierDef"/>.</returns>
         public static ItemTierDef DefineItemTier(this ContentPack contentPack, string identifier) => DefineItemTier<ItemTierDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineItemTier(ContentPack, string)"/>
         public static TItemTierDef DefineItemTier<TItemTierDef>(this ContentPack contentPack, string identifier) where TItemTierDef : ItemTierDef
         {
             TItemTierDef itemTier = ScriptableObject.CreateInstance<TItemTierDef>();
@@ -363,8 +515,18 @@ namespace IvyLibrary
             return itemTier;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="NetworkSoundEventDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// The network sound event is added to <see cref="ContentPack.networkSoundEventDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this network sound event.</param>
+        /// <returns>The newly-created <see cref="NetworkSoundEventDef"/>.</returns>
         public static NetworkSoundEventDef DefineNetworkSoundEvent(this ContentPack contentPack, string identifier) => DefineNetworkSoundEvent<NetworkSoundEventDef>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineNetworkSoundEvent(ContentPack, string)"/>
         public static TNetworkSoundEventDef DefineNetworkSoundEvent<TNetworkSoundEventDef>(this ContentPack contentPack, string identifier) where TNetworkSoundEventDef : NetworkSoundEventDef
         {
             TNetworkSoundEventDef networkSoundEvent = ScriptableObject.CreateInstance<TNetworkSoundEventDef>();
@@ -373,6 +535,16 @@ namespace IvyLibrary
             return networkSoundEvent;
         }
 
+        /// <summary>
+        /// Defines a new <typeparamref name="TMiscPickupDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the pickup.
+        /// The pickup is added to <see cref="ContentPack.miscPickupDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this pickup.</param>
+        /// <returns>The newly-created <typeparamref name="TMiscPickupDef"/>.</returns>
         public static TMiscPickupDef DefineMiscPickup<TMiscPickupDef>(this ContentPack contentPack, string identifier) where TMiscPickupDef : MiscPickupDef, new()
         {
             TMiscPickupDef miscPickup = ScriptableObject.CreateInstance<TMiscPickupDef>();
@@ -386,8 +558,20 @@ namespace IvyLibrary
             return miscPickup;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="SceneDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the scene.
+        /// The scene is added to the first <see cref="ExpansionDef"/> in <see cref="ContentPack.expansionDefs"/>, if present.
+        /// The scene is added to <see cref="ContentPack.sceneDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="sceneIdentifier">The actual name of this scene.</param>
+        /// <returns>The newly-created <see cref="SceneDef"/>.</returns>
         public static SceneDef DefineScene(this ContentPack contentPack, string sceneIdentifier) => DefineScene<SceneDef>(contentPack, sceneIdentifier);
 
+        /// <inheritdoc cref="DefineScene(ContentPack, string)"/>
         public static TSceneDef DefineScene<TSceneDef>(this ContentPack contentPack, string sceneIdentifier) where TSceneDef : SceneDef
         {
             TSceneDef scene = ScriptableObject.CreateInstance<TSceneDef>();
@@ -404,8 +588,18 @@ namespace IvyLibrary
             return scene;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="ItemRelationshipType"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// The item relationship type is added to <see cref="ContentPack.itemRelationshipTypes"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this item relationship type.</param>
+        /// <returns>The newly-created <see cref="ItemRelationshipType"/>.</returns>
         public static ItemRelationshipType DefineItemRelationshipType(this ContentPack contentPack, string identifier) => DefineItemRelationshipType<ItemRelationshipType>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineItemRelationshipType(ContentPack, string)"/>
         public static TItemRelationshipType DefineItemRelationshipType<TItemRelationshipType>(this ContentPack contentPack, string identifier) where TItemRelationshipType : ItemRelationshipType
         {
             TItemRelationshipType itemRelationshipType = ScriptableObject.CreateInstance<TItemRelationshipType>();
@@ -414,8 +608,18 @@ namespace IvyLibrary
             return itemRelationshipType;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="ItemRelationshipProvider"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// The item relationship provider is added to <see cref="ContentPack.itemRelationshipProviders"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this item relationship provider.</param>
+        /// <returns>The newly-created <see cref="ItemRelationshipProvider"/>.</returns>
         public static ItemRelationshipProvider DefineItemRelationshipProvider(this ContentPack contentPack, string identifier) => DefineItemRelationshipProvider<ItemRelationshipProvider>(contentPack, identifier);
 
+        /// <inheritdoc cref="DefineItemRelationshipProvider(ContentPack, string)"/>
         public static TItemRelationshipProvider DefineItemRelationshipProvider<TItemRelationshipProvider>(this ContentPack contentPack, string identifier) where TItemRelationshipProvider : ItemRelationshipProvider
         {
             TItemRelationshipProvider itemRelationshipProvider = ScriptableObject.CreateInstance<TItemRelationshipProvider>();
@@ -424,12 +628,24 @@ namespace IvyLibrary
             return itemRelationshipProvider;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="DifficultyDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>Language tokens are generated for the difficulty.</para>
+        /// <para>The internal implementation of this method uses <see cref="DifficultyAPI"/>.</para>
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this difficulty.</param>
+        /// <param name="preferPositiveIndex">Prefer a positive <see cref="DifficultyIndex"/> over negative, placing this difficulty above Eclipse.</param>
+        /// <returns>A <see cref="DifficultyWrapper"/> with the newly-created <see cref="DifficultyDef"/> and registered <see cref="DifficultyIndex"/>.</returns>
         public static DifficultyWrapper DefineDifficulty(this ContentPack contentPack, string identifier, bool preferPositiveIndex = false)
         {
             (DifficultyDef difficulty, DifficultyIndex difficultyIndex) = DefineDifficultyImpl<DifficultyDef>(identifier, preferPositiveIndex, contentPack);
             return new DifficultyWrapper(difficulty, difficultyIndex);
         }
 
+        /// <inheritdoc cref="DefineDifficulty(ContentPack, string, bool)"/>
         public static DifficultyWrapper<TDifficultyDef> DefineDifficulty<TDifficultyDef>(this ContentPack contentPack, string identifier, bool preferPositiveIndex = false) where TDifficultyDef : DifficultyDef
         {
             (TDifficultyDef difficulty, DifficultyIndex difficultyIndex) = DefineDifficultyImpl<TDifficultyDef>(identifier, preferPositiveIndex, contentPack);
@@ -448,6 +664,19 @@ namespace IvyLibrary
             return (difficulty, DifficultyAPI.AddDifficulty(difficulty, preferPositiveIndex));
         }
 
+        /// <summary>
+        /// Defines a new <see cref="EliteDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the elite.
+        /// The elite is added to the first <see cref="ExpansionDef"/> in <see cref="ContentPack.expansionDefs"/>, if present.
+        /// An elite equipment is created and added to <see cref="ContentPack.equipmentDefs"/>.
+        /// A passive elite buff is created and added to <see cref="ContentPack.buffDefs"/>.
+        /// The elite is added to <see cref="ContentPack.eliteDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this elite.</param>
+        /// <returns>An <see cref="EliteWrapper"/> with the newly-created <see cref="EliteDef"/>, elite <see cref="EquipmentDef"/>, and elite <see cref="BuffDef"/>.</returns>
         public static EliteWrapper DefineElite(this ContentPack contentPack, string identifier)
         {
             (EliteDef elite, EquipmentDef eliteEquipment, BuffDef eliteBuff) = DefineEliteImpl<EliteDef, EquipmentDef, BuffDef>(identifier, contentPack);
@@ -459,6 +688,7 @@ namespace IvyLibrary
             return result; 
         }
 
+        /// <inheritdoc cref="DefineElite(ContentPack, string)"/>
         public static EliteWrapper<TEliteDef, TEquipmentDef, TBuffDef> DefineElite<TEliteDef, TEquipmentDef, TBuffDef>(this ContentPack contentPack, string identifier)
             where TEliteDef : EliteDef
             where TEquipmentDef : EquipmentDef
@@ -497,8 +727,20 @@ namespace IvyLibrary
             return (elite, eliteEquipment, eliteBuff);
         }
 
+        /// <summary>
+        /// Defines a new <see cref="UnlockableDef"/> in this <see cref="ContentPack"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the unlockable.
+        /// The unlockable is added to <see cref="ContentPack.unlockableDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="unlockableType">The <see cref="UnlockableType"/> of this unlockable.</param>
+        /// <param name="identifier">An internal identifier for this unlockable.</param>
+        /// <returns>The newly-created <see cref="UnlockableDef"/>.</returns>
         public static UnlockableDef DefineUnlockable(this ContentPack contentPack, UnlockableType unlockableType, string identifier) => DefineUnlockable<UnlockableDef>(contentPack, unlockableType, identifier);
 
+        /// <inheritdoc cref="DefineUnlockable(ContentPack, UnlockableType, string)"/>
         public static TUnlockableDef DefineUnlockable<TUnlockableDef>(this ContentPack contentPack, UnlockableType unlockableType, string identifier) where TUnlockableDef : UnlockableDef
         {
             TUnlockableDef unlockable = ScriptableObject.CreateInstance<TUnlockableDef>();
@@ -510,6 +752,18 @@ namespace IvyLibrary
             return unlockable;
         }
 
+        /// <summary>
+        /// Defines a new <see cref="AchievementDef"/> in this <see cref="ContentPack"/> for the specified <paramref name="item"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the achievement.
+        /// An unlockable is created and added to <see cref="ContentPack.unlockableDefs"/>.
+        /// The achievement is set to be registered during <see cref="RoR2BepInExPack.VanillaFixes.SaferAchievementManager.OnCollectAchievementDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this achievement.</param>
+        /// <param name="item">The <see cref="ItemDef"/> to be unlocked by this achievement.</param>
+        /// <returns>An <see cref="AchievementWrapper"/> with the newly-created <see cref="AchievementDef"/> and <see cref="UnlockableDef"/>.</returns>
         public static AchievementWrapper DefineAchievementForItem(this ContentPack contentPack, string identifier, ItemDef item)
         {
             UnlockableDef unlockable = DefineUnlockable(contentPack, UnlockableType.Items, item.name).SetNameToken(item.nameToken);
@@ -517,6 +771,7 @@ namespace IvyLibrary
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <inheritdoc cref="DefineAchievementForItem(ContentPack, string, ItemDef)"/>
         public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForItem<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, ItemDef item)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
@@ -526,6 +781,13 @@ namespace IvyLibrary
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <summary>
+        /// Defines a new <see cref="AchievementDef"/> in this <see cref="ContentPack"/> for the specified <paramref name="equipment"/>.
+        /// </summary>
+        /// <param name="equipment">The <see cref="EquipmentDef"/> to be unlocked by this achievement.</param>
+        /// <inheritdoc cref="DefineAchievementForItem(ContentPack, string, ItemDef)"/>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier"></param>
         public static AchievementWrapper DefineAchievementForEquipment(this ContentPack contentPack, string identifier, EquipmentDef equipment)
         {
             UnlockableDef unlockable = DefineUnlockable(contentPack, UnlockableType.Items, equipment.name).SetNameToken(equipment.nameToken);
@@ -533,6 +795,7 @@ namespace IvyLibrary
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <inheritdoc cref="DefineAchievementForEquipment(ContentPack, string, EquipmentDef)"/>
         public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForEquipment<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, EquipmentDef equipment)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
@@ -542,6 +805,13 @@ namespace IvyLibrary
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <summary>
+        /// Defines a new <see cref="AchievementDef"/> in this <see cref="ContentPack"/> for the specified <paramref name="survivor"/>.
+        /// </summary>
+        /// <param name="survivor">The <see cref="SurvivorDef"/> to be unlocked by this achievement.</param>
+        /// <inheritdoc cref="DefineAchievementForItem(ContentPack, string, ItemDef)"/>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier"></param>
         public static AchievementWrapper DefineAchievementForSurvivor(this ContentPack contentPack, string identifier, SurvivorDef survivor)
         {
             UnlockableDef unlockable = DefineUnlockable(contentPack, UnlockableType.Characters, survivor.cachedName).SetNameToken(survivor.displayNameToken);
@@ -549,6 +819,7 @@ namespace IvyLibrary
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <inheritdoc cref="DefineAchievementForSurvivor(ContentPack, string, SurvivorDef)"/>
         public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSurvivor<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, SurvivorDef survivor)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
@@ -558,6 +829,13 @@ namespace IvyLibrary
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <summary>
+        /// Defines a new <see cref="AchievementDef"/> in this <see cref="ContentPack"/> for the specified <paramref name="artifact"/>.
+        /// </summary>
+        /// <param name="artifact">The <see cref="ArtifactDef"/> to be unlocked by this achievement.</param>
+        /// <inheritdoc cref="DefineAchievementForItem(ContentPack, string, ItemDef)"/>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier"></param>
         public static AchievementWrapper DefineAchievementForArtifact(this ContentPack contentPack, string identifier, ArtifactDef artifact)
         {
             UnlockableDef unlockable = DefineUnlockable(contentPack, UnlockableType.Artifacts, artifact.cachedName).SetNameToken(artifact.nameToken);
@@ -565,6 +843,7 @@ namespace IvyLibrary
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <inheritdoc cref="DefineAchievementForArtifact(ContentPack, string, ArtifactDef)"/>
         public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForArtifact<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, ArtifactDef artifact)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
@@ -574,6 +853,13 @@ namespace IvyLibrary
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <summary>
+        /// Defines a new <see cref="AchievementDef"/> in this <see cref="ContentPack"/> for the specified <paramref name="skillVariant"/>.
+        /// </summary>
+        /// <param name="skillVariant">The <see cref="SkillFamily.Variant"/> to be unlocked by this achievement.</param>
+        /// <inheritdoc cref="DefineAchievementForItem(ContentPack, string, ItemDef)"/>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier"></param>
         public static AchievementWrapper DefineAchievementForSkill(this ContentPack contentPack, string identifier, ref SkillFamily.Variant skillVariant)
         {
             if (skillVariant.skillDef == null)
@@ -585,6 +871,7 @@ namespace IvyLibrary
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <inheritdoc cref="DefineAchievementForSkill(ContentPack, string, ref SkillFamily.Variant)"/>
         public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkill<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, ref SkillFamily.Variant skillVariant)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
@@ -598,6 +885,14 @@ namespace IvyLibrary
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <summary>
+        /// Defines a new <see cref="AchievementDef"/> in this <see cref="ContentPack"/> for two skill variants with the same <see cref="SkillFamily.Variant.skillDef"/>.
+        /// </summary>
+        /// <param name="skillVariant1">The first <see cref="SkillFamily.Variant"/> to be unlocked by this achievement.</param>
+        /// <param name="skillVariant2">The second <see cref="SkillFamily.Variant"/> to be unlocked by this achievement.</param>
+        /// <inheritdoc cref="DefineAchievementForItem(ContentPack, string, ItemDef)"/>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier"></param>
         public static AchievementWrapper DefineAchievementForSkill(this ContentPack contentPack, string identifier, ref SkillFamily.Variant skillVariant1, ref SkillFamily.Variant skillVariant2)
         {
             if (skillVariant1.skillDef == null)
@@ -610,6 +905,7 @@ namespace IvyLibrary
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <inheritdoc cref="DefineAchievementForSkill(ContentPack, string, ref SkillFamily.Variant, ref SkillFamily.Variant)"/>
         public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkill<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, ref SkillFamily.Variant skillVariant1, ref SkillFamily.Variant skillVariant2)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
@@ -624,12 +920,24 @@ namespace IvyLibrary
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <summary>
+        /// Defines a new <see cref="AchievementDef"/> in this <see cref="ContentPack"/> for the specified <paramref name="skill"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para><paramref name="skill"/> must be manually associated with the created <see cref="UnlockableDef"/> as part of a <see cref="SkillFamily.Variant"/>.</para>
+        /// <inheritdoc cref="DefineAchievementForItem(ContentPack, string, ItemDef)"/>
+        /// </remarks>
+        /// <param name="skill">The <see cref="SkillDef"/> to generate this achievement for.</param>
+        /// <inheritdoc cref="DefineAchievementForItem(ContentPack, string, ItemDef)"/>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier"></param>
         public static AchievementWrapper DefineAchievementForSkill(this ContentPack contentPack, string identifier, SkillDef skill)
         {
             UnlockableDef unlockable = DefineUnlockableForSkillImpl<UnlockableDef>(skill, contentPack);
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <inheritdoc cref="DefineAchievementForSkill(ContentPack, string, SkillDef)"/>
         public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkill<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, SkillDef skill)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
@@ -645,6 +953,13 @@ namespace IvyLibrary
                 .SetNameToken(skill.skillNameToken);
         }
 
+        /// <summary>
+        /// Defines a new <see cref="AchievementDef"/> in this <see cref="ContentPack"/> for the specified <paramref name="skin"/>.
+        /// </summary>
+        /// <param name="skin">The <see cref="SkinDef"/> to be unlocked by this achievement.</param>
+        /// <inheritdoc cref="DefineAchievementForItem(ContentPack, string, ItemDef)"/>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier"></param>
         public static AchievementWrapper DefineAchievementForSkin(this ContentPack contentPack, string identifier, SkinDef skin)
         {
             UnlockableDef unlockable = DefineUnlockable(contentPack, UnlockableType.Skins, skin.name).SetNameToken(skin.nameToken);
@@ -652,6 +967,7 @@ namespace IvyLibrary
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <inheritdoc cref="DefineAchievementForSkin(ContentPack, string, SkinDef)"/>
         public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForSkin<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, SkinDef skin)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef
@@ -661,11 +977,23 @@ namespace IvyLibrary
             return new AchievementWrapper<TAchievementDef, TUnlockableDef>(DefineAchievementImpl<TAchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <summary>
+        /// Defines a new <see cref="AchievementDef"/> in this <see cref="ContentPack"/> for the specified <paramref name="unlockable"/>.
+        /// </summary>
+        /// <remarks>
+        /// Language tokens are generated for the achievement.
+        /// The achievement is set to be registered during <see cref="RoR2BepInExPack.VanillaFixes.SaferAchievementManager.OnCollectAchievementDefs"/>.
+        /// </remarks>
+        /// <param name="contentPack"></param>
+        /// <param name="identifier">An internal identifier for this achievement.</param>
+        /// <param name="unlockable">The <see cref="UnlockableDef"/> to be unlocked by this achievement.</param>
+        /// <returns>An <see cref="AchievementWrapper"/> with the newly-created <see cref="AchievementDef"/> and existing <see cref="UnlockableDef"/>.</returns>
         public static AchievementWrapper DefineAchievementForUnlockable(this ContentPack contentPack, string identifier, UnlockableDef unlockable)
         {
             return new AchievementWrapper(DefineAchievementImpl<AchievementDef>(identifier, unlockable, contentPack), unlockable);
         }
 
+        /// <inheritdoc cref="DefineAchievementForUnlockable(ContentPack, string, UnlockableDef)"/>
         public static AchievementWrapper<TAchievementDef, TUnlockableDef> DefineAchievementForUnlockable<TAchievementDef, TUnlockableDef>(this ContentPack contentPack, string identifier, TUnlockableDef unlockable)
             where TAchievementDef : AchievementDef
             where TUnlockableDef : UnlockableDef

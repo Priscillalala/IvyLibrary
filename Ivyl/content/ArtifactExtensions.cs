@@ -45,7 +45,7 @@ namespace IvyLibrary
         /// Associate an artifact code with this <see cref="ArtifactDef"/> as input for an artifact portal (e.g., on Sky Meadow).
         /// </summary>
         /// <remarks>
-        /// The internal implementation of this method is deferred to <see cref="ArtifactCodeAPI"/>.
+        /// The internal implementation of this method uses <see cref="ArtifactCodeAPI"/>.
         /// </remarks>
         /// <returns><paramref name="artifactDef"/>, to continue a method chain.</returns>
         public static TArtifactDef SetArtifactCode<TArtifactDef>(this TArtifactDef artifactDef, ArtifactCode? artifactCode) where TArtifactDef : ArtifactDef
