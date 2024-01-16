@@ -10,9 +10,21 @@ namespace IvyLibrary
     {
         /// <inheritdoc cref="BuffFlags.None"/>
         None,
+        /// <summary>
+        /// Using this skill resets any current cooldown progress to zero.
+        /// </summary>
         ResetCooldownTimerOnUse = 1 << 0,
+        /// <summary>
+        /// This skill will not regain max stock when reassigned (e.g., when a skill override is unset).
+        /// </summary>
         NoRestockOnAssign = 1 << 1,
+        /// <summary>
+        /// This stock of this skill is capped to max stock when the skill is assigned.
+        /// </summary>
         DontAllowPastMaxStocks = 1 << 2,
+        /// <summary>
+        /// The cooldown of this skill is frozen until the activation state is completed.
+        /// </summary>
         BeginSkillCooldownOnSkillEnd = 1 << 3,
         /// <summary>
         /// This skill does not cancel sprinting on activation.
