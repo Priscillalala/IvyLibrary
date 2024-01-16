@@ -10,7 +10,10 @@ using System.Linq;
 
 namespace IvyLibrary
 {
-    public abstract class BaseBuffBodyBehavior : BaseAssetAssociatedBehavior<BaseBuffBodyBehavior.BuffDefAssociationAttribute, BaseBuffBodyBehavior.NetworkContext>
+	/// <summary>
+	/// A variant of <see cref="RoR2.Items.BaseItemBodyBehavior"/> to associated a buff with a component on the <see cref="CharacterBody"/>.
+	/// </summary>
+	public abstract class BaseBuffBodyBehavior : BaseAssetAssociatedBehavior<BaseBuffBodyBehavior.BuffDefAssociationAttribute, BaseBuffBodyBehavior.NetworkContext>
 	{
 		private static CharacterBody earlyAssignmentBody = null;
 		private static Dictionary<UnityObjectWrapperKey<CharacterBody>, BaseBuffBodyBehavior[]> bodyToBuffBehaviors;
@@ -158,6 +161,9 @@ namespace IvyLibrary
 			}
 		}
 
+		/// <summary>
+		/// Applied to a static method, with no parameters and return type <see cref="BuffDef"/>, inside a <see cref="BaseBuffBodyBehavior"/> class to associate item with behavior.
+		/// </summary>
 		[MeansImplicitUse]
 		[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 		public class BuffDefAssociationAttribute : HG.Reflection.SearchableAttribute

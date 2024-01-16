@@ -10,6 +10,9 @@ using System.Reflection;
 
 namespace IvyLibrary
 {
+	/// <summary>
+	/// A variant of <see cref="BaseItemBodyBehavior"/> to associate an item with a component on the <see cref="CharacterMaster"/>.
+	/// </summary>
     public abstract class BaseItemMasterBehavior : BaseAssetAssociatedBehavior<BaseItemMasterBehavior.ItemDefAssociationAttribute, BaseItemMasterBehavior.NetworkContext>
 	{
 		private static CharacterMaster earlyAssignmentMaster = null;
@@ -169,6 +172,9 @@ namespace IvyLibrary
 			}
 		}
 
+		/// <summary>
+		/// Applied to a static method, with no parameters and return type <see cref="ItemDef"/>, inside a <see cref="BaseItemMasterBehavior"/> class to associate item with behavior.
+		/// </summary>
 		[MeansImplicitUse]
 		[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 		public class ItemDefAssociationAttribute : HG.Reflection.SearchableAttribute

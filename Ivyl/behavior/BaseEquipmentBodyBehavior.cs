@@ -9,7 +9,10 @@ using System.Linq;
 
 namespace IvyLibrary
 {
-    public abstract class BaseEquipmentBodyBehavior : BaseAssetAssociatedBehavior<BaseEquipmentBodyBehavior.EquipmentDefDefAssociationAttribute, BaseEquipmentBodyBehavior.NetworkContext>
+	/// <summary>
+	/// A variant of <see cref="RoR2.Items.BaseItemBodyBehavior"/> to associate an equipment with a component on the <see cref="CharacterBody"/>.
+	/// </summary>
+	public abstract class BaseEquipmentBodyBehavior : BaseAssetAssociatedBehavior<BaseEquipmentBodyBehavior.EquipmentDefDefAssociationAttribute, BaseEquipmentBodyBehavior.NetworkContext>
 	{
 		private static CharacterBody earlyAssignmentBody = null;
 		private static Dictionary<UnityObjectWrapperKey<CharacterBody>, EquipmentBehaviorsState> bodyToEquipmentBehaviors;
@@ -174,6 +177,9 @@ namespace IvyLibrary
 			}
 		}
 
+		/// <summary>
+		/// Applied to a static method, with no parameters and return type <see cref="EquipmentDef"/>, inside a <see cref="BaseEquipmentBodyBehavior"/> class to associate item with behavior.
+		/// </summary>
 		[MeansImplicitUse]
 		[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 		public class EquipmentDefDefAssociationAttribute : HG.Reflection.SearchableAttribute
