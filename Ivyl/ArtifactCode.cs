@@ -3,6 +3,9 @@ using System.Security.Cryptography;
 
 namespace IvyLibrary
 {
+    /// <summary>
+    /// Represents a 3x3 artifact code as input for an artifact portal (e.g., on Sky Meadow).
+    /// </summary>
     public struct ArtifactCode
     {
         public (ArtifactCompound, ArtifactCompound, ArtifactCompound) topRow;

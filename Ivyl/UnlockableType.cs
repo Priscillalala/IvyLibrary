@@ -2,6 +2,9 @@
 
 namespace IvyLibrary
 {
+	/// <summary>
+	/// The standard unlockables types, with implicit conversion from strings for custom unlockable types.
+	/// </summary>
     public struct UnlockableType : IEquatable<UnlockableType>, IEquatable<string>
 	{
 		public static readonly UnlockableType Items = "Items";

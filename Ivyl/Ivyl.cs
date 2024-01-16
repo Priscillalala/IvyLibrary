@@ -70,9 +70,9 @@ namespace IvyLibrary
             return SetupModelPanelParameters(model, Quaternion.Euler(modelRotation), minDistance, maxDistance, focusPoint, cameraPosition);
         }
 
-        public static ModelPanelParameters SetupModelPanelParameters(GameObject model, ModelPanelParams info)
+        public static ModelPanelParameters SetupModelPanelParameters(GameObject model, ModelPanelParams modelPanelParams)
         {
-            return SetupModelPanelParameters(model, info.modelRotation, info.minDistance, info.maxDistance, info.focusPoint, info.cameraPosition);
+            return SetupModelPanelParameters(model, modelPanelParams.modelRotation, modelPanelParams.minDistance, modelPanelParams.maxDistance, modelPanelParams.focusPoint, modelPanelParams.cameraPosition);
         }
 
         public static ModelPanelParameters SetupModelPanelParameters(GameObject model, Quaternion modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)

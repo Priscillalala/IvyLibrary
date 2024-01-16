@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace IvyLibrary
 {
+    /// <summary>
+    /// Groups an asset with an item display prefab.
+    /// </summary>
     public struct ItemDisplaySpec
     {
         public UnityEngine.Object keyAsset;
