@@ -29,6 +29,9 @@ using ThreeEyedGames;
 
 namespace IvyLibrary
 {
+    /// <summary>
+    /// A collection of useful static and extension methods provided by IVYL.
+    /// </summary>
     public static class Ivyl
     {
         private static Transform _prefabParent;
@@ -42,7 +45,7 @@ namespace IvyLibrary
             _prefabParent = new GameObject("IVYLPrefabs").transform;
             _prefabParent.gameObject.SetActive(false);
             UnityEngine.Object.DontDestroyOnLoad(_prefabParent.gameObject);
-            On.RoR2.Util.IsPrefab += (orig, gameObject) => gameObject.transform.parent == _prefabParent || orig(gameObject);
+            On.RoR2.Util.IsPrefab += (orig, gameObject) => orig(gameObject) || gameObject.transform.parent == _prefabParent;
         }
 
         /// <summary>
@@ -80,16 +83,26 @@ namespace IvyLibrary
             return prefab;
         }
 
+        /// <summary>
+        /// Adds a <see cref="ModelPanelParameters"/> component to <paramref name="model"/> based on the input parameters.
+        /// </summary>
+        /// <remarks>
+        /// Looks for a child named "FocusPoint" or "Focus Point" for the <see cref="ModelPanelParameters.focusPointTransform"/>; otherwise, creates one.
+        /// Looks for a child named "CameraPosition" or "Camera Position" for the <see cref="ModelPanelParameters.cameraPositionTransform"/>; otherwise, creates one.
+        /// </remarks>
+        /// <returns>The newly-created <see cref="ModelPanelParameters"/>.</returns>
         public static ModelPanelParameters SetupModelPanelParameters(GameObject model, Vector3 modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
         {
             return SetupModelPanelParameters(model, Quaternion.Euler(modelRotation), minDistance, maxDistance, focusPoint, cameraPosition);
         }
 
+        /// <inheritdoc cref="SetupModelPanelParameters(GameObject, Vector3, float, float, Transform, Transform)"/>        
         public static ModelPanelParameters SetupModelPanelParameters(GameObject model, ModelPanelParams modelPanelParams)
         {
             return SetupModelPanelParameters(model, modelPanelParams.modelRotation, modelPanelParams.minDistance, modelPanelParams.maxDistance, modelPanelParams.focusPoint, modelPanelParams.cameraPosition);
         }
 
+        /// <inheritdoc cref="SetupModelPanelParameters(GameObject, Vector3, float, float, Transform, Transform)"/>        
         public static ModelPanelParameters SetupModelPanelParameters(GameObject model, Quaternion modelRotation, float minDistance, float maxDistance, Transform focusPoint = null, Transform cameraPosition = null)
         {
             ModelPanelParameters parameters = model.AddComponent<ModelPanelParameters>();
