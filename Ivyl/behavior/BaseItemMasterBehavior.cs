@@ -175,6 +175,9 @@ namespace IvyLibrary
 		/// <summary>
 		/// Applied to a static method, with no parameters and return type <see cref="ItemDef"/>, inside a <see cref="BaseItemMasterBehavior"/> class to associate item with behavior.
 		/// </summary>
+		/// <remarks>
+		/// <see cref="ItemDefAssociationAttribute"/> is a <see cref="HG.Reflection.SearchableAttribute"/>. <see cref="HG.Reflection.SearchableAttribute.OptInAttribute"/> must be present.
+		/// </remarks>
 		[MeansImplicitUse]
 		[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 		public class ItemDefAssociationAttribute : HG.Reflection.SearchableAttribute

@@ -180,6 +180,9 @@ namespace IvyLibrary
 		/// <summary>
 		/// Applied to a static method, with no parameters and return type <see cref="EquipmentDef"/>, inside a <see cref="BaseEquipmentBodyBehavior"/> class to associate item with behavior.
 		/// </summary>
+		/// <remarks>
+		/// <see cref="EquipmentDefDefAssociationAttribute"/> is a <see cref="HG.Reflection.SearchableAttribute"/>. <see cref="HG.Reflection.SearchableAttribute.OptInAttribute"/> must be present.
+		/// </remarks>
 		[MeansImplicitUse]
 		[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 		public class EquipmentDefDefAssociationAttribute : HG.Reflection.SearchableAttribute

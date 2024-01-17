@@ -7,6 +7,18 @@ using System.Linq;
 
 namespace IvyLibrary
 {
+
+#pragma warning disable CS1584 // XML comment has syntactically incorrect cref attribute
+#pragma warning disable CS1658 // Warning is overriding an error
+    /// <summary>
+    /// Register a mock language file within your project.
+    /// </summary>
+    /// <remarks>
+    /// <para>Must be applied to a static method with return type <see cref="System.Collections.Generic.IEnumerable{KeyValuePair{string, string}}"/>. <see cref="LanguageDictionary"/> is recommended for this purpose.</para>
+    /// <para><see cref="LanguageStringsAttribute"/> is a <see cref="HG.Reflection.SearchableAttribute"/>. <see cref="HG.Reflection.SearchableAttribute.OptInAttribute"/> must be present.</para>
+    /// </remarks>
+#pragma warning restore CS1584 // XML comment has syntactically incorrect cref attribute
+#pragma warning restore CS1658 // Warning is overriding an error
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
     public class LanguageStringsAttribute : HG.Reflection.SearchableAttribute
     {

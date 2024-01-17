@@ -45,6 +45,11 @@ namespace IvyLibrary
             On.RoR2.Util.IsPrefab += (orig, gameObject) => gameObject.transform.parent == _prefabParent || orig(gameObject);
         }
 
+        /// <summary>
+        /// Create an empty prefab.
+        /// </summary>
+        /// <param name="name">The name of this prefab.</param>
+        /// <returns>The newly-created prefab.</returns>
         public static GameObject CreatePrefab(string name)
         {
             InitPrefabParent();
@@ -53,6 +58,16 @@ namespace IvyLibrary
             return prefab;
         }
 
+        /// <summary>
+        /// Clone an existing prefab.
+        /// </summary>
+        /// <remarks>
+        /// If the new prefab has a <see cref="NetworkIdentity"/>, the asset id will be reset to avoid asset collisions.
+        /// A new asset id can be generated manually or through <see cref="ContentPackExtensions.PopulateNetworkedObjectAssetIds(ContentPack)"/>.
+        /// </remarks>
+        /// <param name="original">The <see cref="GameObject"/> to clone.</param>
+        /// <param name="name">The name of the new prefab.</param>
+        /// <returns>The newly-created prefab.</returns>
         public static GameObject ClonePrefab(GameObject original, string name)
         {
             InitPrefabParent();
@@ -99,6 +114,10 @@ namespace IvyLibrary
             return parameters;
         }
 
+        /// <summary>
+        /// Adds an <see cref="ItemDisplay"/> component to <paramref name="displayModelPrefab"/> and populates the <see cref="ItemDisplay.rendererInfos"/>.
+        /// </summary>
+        /// <returns>The newly-created <see cref="ItemDisplay"/>.</returns>
         public static ItemDisplay SetupItemDisplay(GameObject displayModelPrefab)
         {
             ItemDisplay itemDisplay = displayModelPrefab.AddComponent<ItemDisplay>();
@@ -115,6 +134,13 @@ namespace IvyLibrary
             return itemDisplay;
         }
 
+        /// <summary>
+        /// Calculate the value of an item stack where the first stack bonus differs from subsequent stacks.
+        /// </summary>
+        /// <param name="baseValue">The value of the first item stack.</param>
+        /// <param name="stackValue">The value of subsequent item stacks.</param>
+        /// <param name="stack">The current item stack.</param>
+        /// <returns>Current value of <paramref name="stack"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float StackScaling(float baseValue, float stackValue, int stack)
         {
@@ -125,6 +151,7 @@ namespace IvyLibrary
             return 0f;
         }
 
+        /// <inheritdoc cref="StackScaling(float, float, int)"/>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int StackScaling(int baseValue, int stackValue, int stack)
         {
@@ -135,15 +162,30 @@ namespace IvyLibrary
             return 0;
         }
 
+        /// <summary>
+        /// Asynchronously load an addressable asset with inlined syntax.
+        /// </summary>
+        /// <typeparam name="TObject">Asset type.</typeparam>
+        /// <param name="key">A key for this asset; usually an address string.</param>
+        /// <param name="handle">The load handle, to access the loaded asset.</param>
+        /// <returns><paramref name="handle"/> as an <see cref="IEnumerator"/>, to be yielded.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AsyncOperationHandle LoadAddressableAssetAsync<TObject>(object key, out AsyncOperationHandle<TObject> handle)
+        public static IEnumerator LoadAddressableAssetAsync<TObject>(object key, out AsyncOperationHandle<TObject> handle)
         {
             return handle = Addressables.LoadAssetAsync<TObject>(key);
         }
 
-        public static AsyncOperationHandle LoadAddressableAssetsAsync<TObject>(IEnumerable keys, out AsyncOperationHandle<IDictionary<string, TObject>> handle)
+        /// <summary>
+        /// Asynchronously load multiple addressable assets and construct an asset dictionary.
+        /// </summary>
+        /// <typeparam name="TObject">Asset type.</typeparam>
+        /// <param name="keys">Keys or labels for the desired assets.</param>
+        /// <param name="handle">The load handle, to access the loaded assets.</param>
+        /// <param name="mergeMode">Determines how <paramref name="keys"/> are evaluated.</param>
+        /// <returns><paramref name="handle"/> as an <see cref="IEnumerator"/>, to be yielded.</returns>
+        public static IEnumerator LoadAddressableAssetsAsync<TObject>(IEnumerable keys, out AsyncOperationHandle<IDictionary<string, TObject>> handle, Addressables.MergeMode mergeMode = Addressables.MergeMode.Union)
         {
-            var loadLocations = Addressables.LoadResourceLocationsAsync(keys, Addressables.MergeMode.Union, typeof(TObject));
+            var loadLocations = Addressables.LoadResourceLocationsAsync(keys, mergeMode, typeof(TObject));
             var loadAssets = Addressables.ResourceManager.CreateChainOperation<IList<TObject>>(loadLocations, x =>
             {
                 return Addressables.LoadAssetsAsync<TObject>(loadLocations.Result, null, false);
@@ -160,29 +202,65 @@ namespace IvyLibrary
             });
         }
 
+        /// <summary>
+        /// Load an asset bundle relative to this plugin.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="LoadAssetBundleAsync(BaseUnityPlugin, string)"/> is lightly preferred due to not blocking the main thread.
+        /// </remarks>
+        /// <param name="plugin"></param>
+        /// <param name="relativePath">The relative path from this plugin to the asset bundle file, including the file name.</param>
+        /// <returns>The loaded <see cref="AssetBundle"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AssetBundle LoadAssetBundle(this BaseUnityPlugin plugin, string relativePath)
         {
             return AssetBundle.LoadFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
         }
 
+        /// <summary>
+        /// Asynchronously load an asset bundle relative to this plugin.
+        /// </summary>
+        /// <param name="plugin"></param>
+        /// <param name="relativePath">The relative path from this plugin to the asset bundle file, including the file name.</param>
+        /// <returns>An <see cref="AssetBundleCreateRequest"/> to track load progress.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AssetBundleCreateRequest LoadAssetBundleAsync(this BaseUnityPlugin plugin, string relativePath)
         {
             return AssetBundle.LoadFromFileAsync(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
         }
 
+        /// <summary>
+        /// Convert this <see cref="AssetBundleRequest"/> to an <see cref="AssetBundleRequest{T}"/>.
+        /// </summary>
         public static AssetBundleRequest<T> Convert<T>(this AssetBundleRequest request) where T : UnityEngine.Object
         {
             return new AssetBundleRequest<T>(request);
         }
 
+        /// <summary>
+        /// Asynchronously load a bundled asset with inlined syntax.
+        /// </summary>
+        /// <typeparam name="T">Asset type.</typeparam>
+        /// <param name="assetBundle"></param>
+        /// <param name="name">The name of the requested asset.</param>
+        /// <param name="request">The load request, to access the loaded asset.</param>
+        /// <returns><paramref name="request"/> as an <see cref="IEnumerator"/>, to be yielded.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AssetBundleRequest LoadAssetAsync<T>(this AssetBundle assetBundle, string name, out AssetBundleRequest<T> request) where T : UnityEngine.Object
+        public static IEnumerator LoadAssetAsync<T>(this AssetBundle assetBundle, string name, out AssetBundleRequest<T> request) where T : UnityEngine.Object
         {
             return request = assetBundle.LoadAssetAsync<T>(name).Convert<T>();
         }
 
+        /// <summary>
+        /// Create a configuration file relative to this plugin.
+        /// </summary>
+        /// <remarks>
+        /// Enforces the .cfg file extension.
+        /// </remarks>
+        /// <param name="plugin"></param>
+        /// <param name="relativePath">The relative path from this plugin to the config file, including the file name.</param>
+        /// <param name="saveOnInit">Will immediately save the config file to disk if true; otherwise, waits until the first interaction.</param>
+        /// <returns>The newly-created <see cref="ConfigFile"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ConfigFile CreateConfigFile(this BaseUnityPlugin plugin, string relativePath, bool saveOnInit = true)
         {
@@ -192,24 +270,36 @@ namespace IvyLibrary
                 plugin.Info.Metadata);
         }
 
+        /// <summary>
+        /// A variant of <see cref="ConfigFile.Bind{T}(string, string, T, string)"/> that directly returns <see cref="ConfigEntry{T}.Value"/>.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Value<T>(this ConfigFile config, string section, string key, T defaultValue, string description)
         {
             return config.Bind(section, key, defaultValue, description).Value;
         }
 
+        /// <summary>
+        /// A variant of <see cref="ConfigFile.Bind{T}(string, string, T, ConfigDescription)"/> that directly returns <see cref="ConfigEntry{T}.Value"/>.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Value<T>(this ConfigFile config, string section, string key, T defaultValue, ConfigDescription configDescription = null)
         {
             return config.Bind(section, key, defaultValue, configDescription).Value;
         }
 
+        /// <summary>
+        /// A variant of <see cref="ConfigFile.Bind{T}(ConfigDefinition, T, ConfigDescription)"/> that directly returns <see cref="ConfigEntry{T}.Value"/>.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Value<T>(this ConfigFile config, ConfigDefinition configDefinition, T defaultValue, ConfigDescription configDescription = null)
         {
             return config.Bind(configDefinition, defaultValue, configDescription).Value;
         }
 
+        /// <summary>
+        /// A variant of <see cref="ConfigFile.Bind{T}(string, string, T, string)"/> that takes <paramref name="value"/> as both the default value and the output value.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ConfigEntry<T> Bind<T>(this ConfigFile config, ref T value, string section, string key, string description)
         {
@@ -218,6 +308,9 @@ namespace IvyLibrary
             return result;
         }
 
+        /// <summary>
+        /// A variant of <see cref="ConfigFile.Bind{T}(string, string, T, ConfigDescription)"/> that takes <paramref name="value"/> as both the default value and the output value.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ConfigEntry<T> Bind<T>(this ConfigFile config, ref T value, string section, string key, ConfigDescription configDescription = null)
         {
@@ -226,6 +319,9 @@ namespace IvyLibrary
             return result;
         }
 
+        /// <summary>
+        /// A variant of <see cref="ConfigFile.Bind{T}(ConfigDefinition, T, ConfigDescription)"/> that takes <paramref name="value"/> as both the default value and the output value.
+        /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static ConfigEntry<T> Bind<T>(this ConfigFile config, ref T value, ConfigDefinition configDefinition, ConfigDescription configDescription = null)
         {
@@ -234,9 +330,18 @@ namespace IvyLibrary
             return result;
         }
 
+        /// <summary>
+        /// Determines if a mod was loaded by BepInEx.
+        /// </summary>
+        /// <remarks>
+        /// Useful for implementing soft compatibility with mods.
+        /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsModLoaded(string guid) => Chainloader.PluginInfos.ContainsKey(guid);
 
+        /// <summary>
+        /// A variant of <see cref="NamedAssetCollection{TAsset}.Add(TAsset[])"/> that takes a single asset.
+        /// </summary>
         public static void Add<TAsset>(this NamedAssetCollection<TAsset> assetCollection, TAsset newAsset)
         {
             string assetName = assetCollection.nameProvider(newAsset);
@@ -259,49 +364,101 @@ namespace IvyLibrary
             assetCollection.assetToName[newAsset] = assetName;
         }
 
-        public static ref SkillFamily.Variant AddSkill(this SkillFamily skillFamily, SkillDef skillDef, UnlockableDef requiredUnlockable = null)
+        /// <summary>
+        /// Append a new <see cref="SkillFamily.Variant"/> to <see cref="SkillFamily.variants"/>.
+        /// </summary>
+        /// <returns>A reference to the new <see cref="SkillFamily.Variant"/>.</returns>
+        public static ref SkillFamily.Variant AddSkill(this SkillFamily skillFamily, SkillDef skill, UnlockableDef requiredUnlockable = null)
         {
-            ArrayUtils.ArrayAppend(ref skillFamily.variants, new SkillFamily.Variant
+            return ref skillFamily.variants[AddSkill(skillFamily, new SkillFamily.Variant
             {
-                skillDef = skillDef,
+                skillDef = skill,
                 unlockableDef = requiredUnlockable,
-                viewableNode = new ViewablesCatalog.Node(skillDef.skillName, false, null),
-            });
-            return ref skillFamily.variants[skillFamily.variants.Length - 1];
+                viewableNode = new ViewablesCatalog.Node(skill.skillName, false, null),
+            })];
         }
 
-        public static ref SkillFamily.Variant InsertSkill(this SkillFamily skillFamily, int index, SkillDef skillDef, UnlockableDef requiredUnlockable = null)
+        /// <summary>
+        /// Append this <paramref name="skillVariant"/> to <see cref="SkillFamily.variants"/>.
+        /// </summary>
+        /// <returns>The index of <paramref name="skillVariant"/> in <see cref="SkillFamily.variants"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int AddSkill(this SkillFamily skillFamily, SkillFamily.Variant skillVariant)
         {
-            ArrayUtils.ArrayInsert(ref skillFamily.variants, index, new SkillFamily.Variant
+            ArrayUtils.ArrayAppend(ref skillFamily.variants, skillVariant);
+            return skillFamily.variants.Length - 1;
+        }
+
+        /// <summary>
+        /// Insert a new <see cref="SkillFamily.Variant"/> into <see cref="SkillFamily.variants"/>.
+        /// </summary>
+        /// <returns>A reference to the new <see cref="SkillFamily.Variant"/>.</returns>
+        public static ref SkillFamily.Variant InsertSkill(this SkillFamily skillFamily, int index, SkillDef skill, UnlockableDef requiredUnlockable = null)
+        {
+            InsertSkill(skillFamily, index, new SkillFamily.Variant
             {
-                skillDef = skillDef,
+                skillDef = skill,
                 unlockableDef = requiredUnlockable,
-                viewableNode = new ViewablesCatalog.Node(skillDef.skillName, false, null),
+                viewableNode = new ViewablesCatalog.Node(skill.skillName, false, null),
             });
             return ref skillFamily.variants[index];
         }
 
+        /// <summary>
+        /// Insert this <paramref name="skillVariant"/> into <see cref="SkillFamily.variants"/>.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static void InsertSkill(this SkillFamily skillFamily, int index, SkillFamily.Variant skillVariant)
+        {
+            ArrayUtils.ArrayInsert(ref skillFamily.variants, index, skillVariant); 
+        }
+
+        /// <summary>
+        /// Append this <paramref name="elite"/> to <see cref="CombatDirector.EliteTierDef.eliteTypes"/>.
+        /// </summary>
+        /// <returns>The index of <paramref name="elite"/> in <see cref="CombatDirector.EliteTierDef.eliteTypes"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int AddElite(this CombatDirector.EliteTierDef eliteTierDef, EliteDef elite)
         {
             ArrayUtils.ArrayAppend(ref eliteTierDef.eliteTypes, elite);
             return eliteTierDef.eliteTypes.Length - 1;
         }
 
+        /// <inheritdoc cref="AddElite(CombatDirector.EliteTierDef, EliteDef)"/>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int AddElite(this CombatDirector.EliteTierDef eliteTierDef, EliteWrapper elite)
         {
             return AddElite(eliteTierDef, elite.EliteDef);
         }
 
+        /// <summary>
+        /// Append a new <see cref="SceneCollection.SceneEntry"/> to <see cref="SceneCollection.sceneEntries"/>.
+        /// </summary>
+        /// <returns>A reference to the new <see cref="SceneCollection.SceneEntry"/>.</returns>
         public static ref SceneCollection.SceneEntry AddScene(this SceneCollection sceneCollection, SceneDef scene, float weight = 1f)
         {
-            ArrayUtils.ArrayAppend(ref sceneCollection._sceneEntries, new SceneCollection.SceneEntry
+            return ref sceneCollection._sceneEntries[AddScene(sceneCollection, new SceneCollection.SceneEntry
             {
                 sceneDef = scene,
                 weight = weight,
-            });
-            return ref sceneCollection._sceneEntries[sceneCollection._sceneEntries.Length - 1];
+            })];
         }
 
+        /// <summary>
+        /// Append this <paramref name="sceneEntry"/> to <see cref="SceneCollection.sceneEntries"/>.
+        /// </summary>
+        /// <returns>The index of <paramref name="sceneEntry"/> in <see cref="SceneCollection.sceneEntries"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int AddScene(this SceneCollection sceneCollection, SceneCollection.SceneEntry sceneEntry)
+        {
+            ArrayUtils.ArrayAppend(ref sceneCollection._sceneEntries, sceneEntry);
+            return sceneCollection._sceneEntries.Length - 1;
+        }
+
+        /// <summary>
+        /// Append a new <see cref="ItemDef.Pair"/> to <see cref="ItemRelationshipProvider.relationships"/>.
+        /// </summary>
+        /// <returns>A reference to the new <see cref="ItemDef.Pair"/>.</returns>
         public static ref ItemDef.Pair AddRelationshipPair(this ItemRelationshipProvider itemRelationshipProvider, ItemDef item1, ItemDef item2)
         {
             return ref itemRelationshipProvider.relationships[AddRelationshipPair(itemRelationshipProvider, new ItemDef.Pair
@@ -311,12 +468,25 @@ namespace IvyLibrary
             })];
         }
 
+        /// <summary>
+        /// Append this <paramref name="relationshipPair"/> to <see cref="ItemRelationshipProvider.relationships"/>.
+        /// </summary>
+        /// <returns>The index of <paramref name="relationshipPair"/> in <see cref="ItemRelationshipProvider.relationships"/>.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static int AddRelationshipPair(this ItemRelationshipProvider itemRelationshipProvider, ItemDef.Pair relationshipPair)
         {
             ArrayUtils.ArrayAppend(ref itemRelationshipProvider.relationships, relationshipPair);
             return itemRelationshipProvider.relationships.Length - 1;
         }
 
+        /// <summary>
+        /// Add a new <see cref="ItemDisplayRule"/> to this <see cref="ItemDisplayRuleSet"/>.
+        /// </summary>
+        /// <remarks>
+        /// This method will first search for an existing <see cref="ItemDisplayRuleSet.KeyAssetRuleGroup"/> that matches the key asset. 
+        /// A new <see cref="ItemDisplayRuleSet.KeyAssetRuleGroup"/> is created if none are found.
+        /// </remarks>
+        /// <returns>A reference to the <see cref="ItemDisplayRuleSet.KeyAssetRuleGroup"/> that contains the new <see cref="ItemDisplayRule"/>.</returns>
         public static ref ItemDisplayRuleSet.KeyAssetRuleGroup AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec itemDisplay, ItemDisplayTransform itemDisplayTransform = default)
         {
             if (!itemDisplay.keyAsset)
@@ -333,7 +503,7 @@ namespace IvyLibrary
                 limbMask = itemDisplay.limbMask,
                 ruleType = itemDisplay.limbMask > LimbFlags.None ? ItemDisplayRuleType.LimbMask : ItemDisplayRuleType.ParentedPrefab
             };
-            for (int i = 0; i < idrs.keyAssetRuleGroups.Length; i++)
+            for (int i = idrs.keyAssetRuleGroups.Length - 1; i >= 0; i--)
             {
                 if (idrs.keyAssetRuleGroups[i].keyAsset == itemDisplay.keyAsset)
                 {
@@ -341,18 +511,18 @@ namespace IvyLibrary
                     return ref idrs.keyAssetRuleGroups[i];
                 }
             }
-            ItemDisplayRuleSet.KeyAssetRuleGroup keyAssetRuleGroup = new ItemDisplayRuleSet.KeyAssetRuleGroup
+            ArrayUtils.ArrayAppend(ref idrs.keyAssetRuleGroups, new ItemDisplayRuleSet.KeyAssetRuleGroup
             {
                 keyAsset = itemDisplay.keyAsset,
                 displayRuleGroup = new DisplayRuleGroup
                 {
                     rules = new[] { itemDisplayRule }
                 }
-            };
-            ArrayUtils.ArrayAppend(ref idrs.keyAssetRuleGroups, keyAssetRuleGroup);
+            });
             return ref idrs.keyAssetRuleGroups[idrs.keyAssetRuleGroups.Length - 1];
         }
 
+        /// <inheritdoc cref="AddDisplayRule(ItemDisplayRuleSet, ItemDisplaySpec, ItemDisplayTransform)"/>
         public static ref ItemDisplayRuleSet.KeyAssetRuleGroup AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec itemDisplay, string childName, Vector3 localPos, Vector3 localAngles, Vector3 localScale)
         {
             return ref AddDisplayRule(idrs, itemDisplay, new ItemDisplayTransform(childName, localPos, localAngles, localScale));
@@ -364,6 +534,9 @@ namespace IvyLibrary
             component = gameObject.AddComponent<T>();
         }
 
+        /// <summary>
+        /// Modify the value of a serialized field stored in this <see cref="EntityStateConfiguration"/>.
+        /// </summary>
         public static bool TryModifyFieldValue<T>(this EntityStateConfiguration entityStateConfiguration, string fieldName, T value)
         {
             ref SerializedField serializedField = ref entityStateConfiguration.serializedFieldsCollection.GetOrCreateField(fieldName);
@@ -451,6 +624,9 @@ namespace IvyLibrary
             }
         }
 
+        /// <summary>
+        /// Add this <see cref="IOnIncomingDamageServerReceiver"/> to <see cref="HealthComponent.onIncomingDamageReceivers"/>.
+        /// </summary>
         public static void AddIncomingDamageReceiver(this HealthComponent healthComponent, IOnIncomingDamageServerReceiver onIncomingDamageReceiver)
         {
             if (healthComponent && Array.IndexOf(healthComponent.onIncomingDamageReceivers, onIncomingDamageReceiver) < 0)
@@ -459,6 +635,9 @@ namespace IvyLibrary
             }
         }
 
+        /// <summary>
+        /// Remove this <see cref="IOnIncomingDamageServerReceiver"/> from <see cref="HealthComponent.onIncomingDamageReceivers"/>.
+        /// </summary>
         public static void RemoveIncomingDamageReceiver(this HealthComponent healthComponent, IOnIncomingDamageServerReceiver onIncomingDamageReceiver)
         {
             if (healthComponent && Array.IndexOf(healthComponent.onIncomingDamageReceivers, onIncomingDamageReceiver) is var index && index >= 0)
@@ -467,6 +646,9 @@ namespace IvyLibrary
             }
         }
 
+        /// <summary>
+        /// Add this <see cref="IOnTakeDamageServerReceiver"/> to <see cref="HealthComponent.onTakeDamageReceivers"/>.
+        /// </summary>
         public static void AddTakeDamageReceiver(this HealthComponent healthComponent, IOnTakeDamageServerReceiver onTakeDamageReceiver)
         {
             if (healthComponent && Array.IndexOf(healthComponent.onTakeDamageReceivers, onTakeDamageReceiver) < 0)
@@ -475,6 +657,9 @@ namespace IvyLibrary
             }
         }
 
+        /// <summary>
+        /// Remove this <see cref="IOnTakeDamageServerReceiver"/> from <see cref="HealthComponent.onTakeDamageReceivers"/>.
+        /// </summary>
         public static void RemoveTakeDamageReceiver(this HealthComponent healthComponent, IOnTakeDamageServerReceiver onTakeDamageReceiver)
         {
             if (healthComponent && Array.IndexOf(healthComponent.onTakeDamageReceivers, onTakeDamageReceiver) is var index && index >= 0)
@@ -483,6 +668,10 @@ namespace IvyLibrary
             }
         }
 
+        /// <summary>
+        /// Asynchronously set the displayed <paramref name="artifactCode"/> of an <see cref="ArtifactFormulaDisplay"/> prefab.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerator"/> to be yielded in an <see cref="IContentPackProvider"/>.</returns>
         public static IEnumerator SetupArtifactFormulaDisplayAsync(ArtifactFormulaDisplay artifactFormulaDisplay, ArtifactCode artifactCode)
         {
             List<AsyncOperationHandle> loadArtifactCompoundsOperations = new List<AsyncOperationHandle>
@@ -539,6 +728,12 @@ namespace IvyLibrary
             };
         }
 
+        /// <summary>
+        /// Immediately set the displayed <paramref name="artifactCode"/> of an <see cref="ArtifactFormulaDisplay"/> prefab.
+        /// </summary>
+        /// <remarks>
+        /// This method will block the main thread until completed. <see cref="SetupArtifactFormulaDisplayAsync(ArtifactFormulaDisplay, ArtifactCode)"/> should be used instead.
+        /// </remarks>
         [Obsolete($"{nameof(SetupArtifactFormulaDisplay)} is not asynchronous and may stall loading. {nameof(SetupArtifactFormulaDisplayAsync)} is preferred.", false)]
         public static void SetupArtifactFormulaDisplay(ArtifactFormulaDisplay artifactFormulaDisplay, ArtifactCode artifactCode)
         {

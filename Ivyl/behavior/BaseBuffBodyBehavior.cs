@@ -164,6 +164,9 @@ namespace IvyLibrary
 		/// <summary>
 		/// Applied to a static method, with no parameters and return type <see cref="BuffDef"/>, inside a <see cref="BaseBuffBodyBehavior"/> class to associate item with behavior.
 		/// </summary>
+		/// <remarks>
+		/// <see cref="BuffDefAssociationAttribute"/> is a <see cref="HG.Reflection.SearchableAttribute"/>. <see cref="HG.Reflection.SearchableAttribute.OptInAttribute"/> must be present.
+		/// </remarks>
 		[MeansImplicitUse]
 		[AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
 		public class BuffDefAssociationAttribute : HG.Reflection.SearchableAttribute
