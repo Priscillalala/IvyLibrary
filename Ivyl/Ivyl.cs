@@ -219,27 +219,31 @@ namespace IvyLibrary
         /// Load an asset bundle relative to this plugin.
         /// </summary>
         /// <remarks>
-        /// <see cref="LoadAssetBundleAsync(BaseUnityPlugin, string)"/> is lightly preferred due to not blocking the main thread.
+        /// <para><paramref name="path"/> includes the file name.</para>
+        /// <para><see cref="LoadAssetBundleAsync(BaseUnityPlugin, string)"/> is lightly preferred due to not blocking the main thread.</para>
         /// </remarks>
         /// <param name="plugin"></param>
-        /// <param name="relativePath">The relative path from this plugin to the asset bundle file, including the file name.</param>
+        /// <param name="path">The relative path from this plugin to the asset bundle file, or an absolute path to the asset bundle file</param>
         /// <returns>The loaded <see cref="AssetBundle"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AssetBundle LoadAssetBundle(this BaseUnityPlugin plugin, string relativePath)
+        public static AssetBundle LoadAssetBundle(this BaseUnityPlugin plugin, string path)
         {
-            return AssetBundle.LoadFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
+            return AssetBundle.LoadFromFile(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), path));
         }
 
         /// <summary>
         /// Asynchronously load an asset bundle relative to this plugin.
         /// </summary>
+        /// <remarks>
+        /// <paramref name="path"/> includes the file name.
+        /// </remarks>
         /// <param name="plugin"></param>
-        /// <param name="relativePath">The relative path from this plugin to the asset bundle file, including the file name.</param>
+        /// <param name="path">The relative path from this plugin to the asset bundle file, or an absolute path to the asset bundle file.</param>
         /// <returns>An <see cref="AssetBundleCreateRequest"/> to track load progress.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static AssetBundleCreateRequest LoadAssetBundleAsync(this BaseUnityPlugin plugin, string relativePath)
+        public static AssetBundleCreateRequest LoadAssetBundleAsync(this BaseUnityPlugin plugin, string path)
         {
-            return AssetBundle.LoadFromFileAsync(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), relativePath));
+            return AssetBundle.LoadFromFileAsync(System.IO.Path.Combine(System.IO.Path.GetDirectoryName(plugin.Info.Location), path));
         }
 
         /// <summary>
@@ -265,20 +269,21 @@ namespace IvyLibrary
         }
 
         /// <summary>
-        /// Create a configuration file relative to this plugin.
+        /// Create an additional configuration file for this plugin.
         /// </summary>
         /// <remarks>
+        /// <paramref name="path"/> includes the file name.
         /// Enforces the .cfg file extension.
         /// </remarks>
         /// <param name="plugin"></param>
-        /// <param name="relativePath">The relative path from this plugin to the config file, including the file name.</param>
-        /// <param name="saveOnInit">Will immediately save the config file to disk if true; otherwise, waits until the first interaction.</param>
+        /// <param name="path">The relative path from the BepInEx config folder to the config file, or an absolute path to the config file.</param>
+        /// <param name="saveOnInit">Will immediately save the config file to disk if true; otherwise, waits until the next interaction.</param>
         /// <returns>The newly-created <see cref="ConfigFile"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static ConfigFile CreateConfigFile(this BaseUnityPlugin plugin, string relativePath, bool saveOnInit = true)
+        public static ConfigFile CreateConfigFile(this BaseUnityPlugin plugin, string path, bool saveOnInit = true)
         {
             return new ConfigFile(
-                System.IO.Path.Combine(Paths.ConfigPath, System.IO.Path.ChangeExtension(relativePath, ".cfg")),
+                System.IO.Path.Combine(Paths.ConfigPath, System.IO.Path.ChangeExtension(path, ".cfg")),
                 saveOnInit,
                 plugin.Info.Metadata);
         }
@@ -383,12 +388,13 @@ namespace IvyLibrary
         /// <returns>A reference to the new <see cref="SkillFamily.Variant"/>.</returns>
         public static ref SkillFamily.Variant AddSkill(this SkillFamily skillFamily, SkillDef skill, UnlockableDef requiredUnlockable = null)
         {
-            return ref skillFamily.variants[AddSkill(skillFamily, new SkillFamily.Variant
+            int index = AddSkill(skillFamily, new SkillFamily.Variant
             {
                 skillDef = skill,
                 unlockableDef = requiredUnlockable,
                 viewableNode = new ViewablesCatalog.Node(skill.skillName, false, null),
-            })];
+            });
+            return ref skillFamily.variants[index];
         }
 
         /// <summary>
@@ -450,11 +456,12 @@ namespace IvyLibrary
         /// <returns>A reference to the new <see cref="SceneCollection.SceneEntry"/>.</returns>
         public static ref SceneCollection.SceneEntry AddScene(this SceneCollection sceneCollection, SceneDef scene, float weight = 1f)
         {
-            return ref sceneCollection._sceneEntries[AddScene(sceneCollection, new SceneCollection.SceneEntry
+            int index = AddScene(sceneCollection, new SceneCollection.SceneEntry
             {
                 sceneDef = scene,
                 weight = weight,
-            })];
+            });
+            return ref sceneCollection._sceneEntries[index];
         }
 
         /// <summary>
@@ -474,11 +481,12 @@ namespace IvyLibrary
         /// <returns>A reference to the new <see cref="ItemDef.Pair"/>.</returns>
         public static ref ItemDef.Pair AddRelationshipPair(this ItemRelationshipProvider itemRelationshipProvider, ItemDef item1, ItemDef item2)
         {
-            return ref itemRelationshipProvider.relationships[AddRelationshipPair(itemRelationshipProvider, new ItemDef.Pair
+            int index = AddRelationshipPair(itemRelationshipProvider, new ItemDef.Pair
             {
                 itemDef1 = item1,
                 itemDef2 = item2
-            })];
+            });
+            return ref itemRelationshipProvider.relationships[index];
         }
 
         /// <summary>

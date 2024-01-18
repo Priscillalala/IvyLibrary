@@ -81,11 +81,7 @@ namespace IvyLibrary
             {
                 throw new ArgumentException(nameof(localTrackerType));
             }
-            if (serverTrackerType == null)
-            {
-                throw new ArgumentNullException(nameof(serverTrackerType));
-            }
-            if (!serverTrackerType.IsSubclassOf(typeof(BaseServerAchievement)))
+            if (serverTrackerType != null && !serverTrackerType.IsSubclassOf(typeof(BaseServerAchievement)))
             {
                 throw new ArgumentException(nameof(serverTrackerType));
             }
