@@ -10,7 +10,7 @@ using HG;
 namespace IvyLibrary
 {
     /// <summary>
-    /// A specialized <see cref="BaseUnityPlugin"/> that generates a <see cref="ContentPack"/> implements <see cref="IContentPackProvider"/>; comparable to <see cref="RoR2Content"/>.
+    /// A specialized <see cref="BaseUnityPlugin"/> that generates a <see cref="ContentPack"/> and implements <see cref="IContentPackProvider"/>; comparable to <see cref="RoR2Content"/>.
     /// </summary>
     public abstract class BaseContentPlugin : BaseUnityPlugin, IContentPackProvider
     {

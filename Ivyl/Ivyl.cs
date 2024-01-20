@@ -556,6 +556,52 @@ namespace IvyLibrary
         }
 
         /// <summary>
+        /// Get or create a component.
+        /// </summary>
+        /// <returns>The existing component of type <typeparamref name="T"/>, or a newly-added component of type <typeparamref name="T"/>.</returns>
+        public static T RequireComponent<T>(this GameObject gameObject) where T : Component
+        {
+            return gameObject.GetComponent<T>() ?? gameObject.AddComponent<T>();
+        }
+
+        /// <summary>
+        /// Get or create a component.
+        /// </summary>
+        /// <param name="gameObject"></param>
+        /// <param name="component">The existing component of type <typeparamref name="T"/>, or a newly-added component of type <typeparamref name="T"/>.</param>
+        public static void RequireComponent<T>(this GameObject gameObject, out T component) where T : Component
+        {
+            component = gameObject.GetComponent<T>() ?? gameObject.AddComponent<T>();
+        }
+
+        /// <summary>
+        /// Get or create a component.
+        /// </summary>
+        /// <returns>The existing component of type <paramref name="componentType"/>, or a newly-added component of type <paramref name="componentType"/>.</returns>
+        public static Component RequireComponent(this GameObject gameObject, Type componentType)
+        {
+            return gameObject.GetComponent(componentType) ?? gameObject.AddComponent(componentType);
+        }
+
+        /// <inheritdoc cref="RequireComponent{T}(GameObject)"/>
+        public static T RequireComponent<T>(this Component component) where T : Component
+        {
+            return component.GetComponent<T>() ?? component.gameObject.AddComponent<T>();
+        }
+
+        /// <inheritdoc cref="RequireComponent{T}(GameObject, out T)"/>
+        public static void RequireComponent<T>(this Component _component, out T component) where T : Component
+        {
+            component = _component.GetComponent<T>() ?? _component.gameObject.AddComponent<T>();
+        }
+
+        /// <inheritdoc cref="RequireComponent(GameObject, Type)"/>
+        public static Component RequireComponent(this Component component, Type componentType)
+        {
+            return component.GetComponent(componentType) ?? component.gameObject.AddComponent(componentType);
+        }
+
+        /// <summary>
         /// Modify the value of a serialized field stored in this <see cref="EntityStateConfiguration"/>.
         /// </summary>
         public static bool TryModifyFieldValue<T>(this EntityStateConfiguration entityStateConfiguration, string fieldName, T value)
