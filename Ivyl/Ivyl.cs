@@ -181,11 +181,11 @@ namespace IvyLibrary
         /// <typeparam name="TObject">Asset type.</typeparam>
         /// <param name="key">A key for this asset; usually an address string.</param>
         /// <param name="handle">The load handle, to access the loaded asset.</param>
-        /// <returns><paramref name="handle"/> as an <see cref="IEnumerator"/>, to be yielded.</returns>
+        /// <returns><paramref name="handle"/> or null as an <see cref="IEnumerator"/>, to be yielded.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IEnumerator LoadAddressableAssetAsync<TObject>(object key, out AsyncOperationHandle<TObject> handle)
         {
-            return handle = Addressables.LoadAssetAsync<TObject>(key);
+            return (handle = Addressables.LoadAssetAsync<TObject>(key)).IsDone ? null : handle;
         }
 
         /// <summary>
@@ -195,7 +195,7 @@ namespace IvyLibrary
         /// <param name="keys">Keys or labels for the desired assets.</param>
         /// <param name="handle">The load handle, to access the loaded assets.</param>
         /// <param name="mergeMode">Determines how <paramref name="keys"/> are evaluated.</param>
-        /// <returns><paramref name="handle"/> as an <see cref="IEnumerator"/>, to be yielded.</returns>
+        /// <returns><paramref name="handle"/> or null as an <see cref="IEnumerator"/>, to be yielded.</returns>
         public static IEnumerator LoadAddressableAssetsAsync<TObject>(IEnumerable keys, out AsyncOperationHandle<IDictionary<string, TObject>> handle, Addressables.MergeMode mergeMode = Addressables.MergeMode.Union)
         {
             var loadLocations = Addressables.LoadResourceLocationsAsync(keys, mergeMode, typeof(TObject));
@@ -203,7 +203,7 @@ namespace IvyLibrary
             {
                 return Addressables.LoadAssetsAsync<TObject>(loadLocations.Result, null, false);
             });
-            return handle = Addressables.ResourceManager.CreateChainOperation<IDictionary<string, TObject>>(loadAssets, x =>
+            handle = Addressables.ResourceManager.CreateChainOperation<IDictionary<string, TObject>>(loadAssets, x =>
             {
                 Dictionary<string, TObject> dict = new Dictionary<string, TObject>();
                 for (int i = 0; i < loadAssets.Result.Count; i++)
@@ -213,6 +213,7 @@ namespace IvyLibrary
                 }
                 return Addressables.ResourceManager.CreateCompletedOperation<IDictionary<string, TObject>>(dict, null);
             });
+            return handle.IsDone ? null : handle;
         }
 
         /// <summary>
