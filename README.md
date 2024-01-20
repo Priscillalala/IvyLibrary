@@ -1,29 +1,31 @@
 # Ivy Library
-IVYL is a static library for RoR2 modding, built to streamline the repetitive apsects of runtime-based mods.</br>
-*IVYL makes use of a BepInEx patcher to implement some features.*
+IVYL is a static library for RoR2 modding made to support high-quality runtime mods.
 
+## Key Features
 ### Content Management
-Quickly and safely define items, equipment, artifacts, and more. Optionally associate your mod's content with an expansion.
-> See: `ContentPackage`, `ExpansionPackage`
-
-### Asset Management
-Load asset bundles directly from your mod plugin, and swap out stubbed shaders with no fuss.
-> See: `BaseUnityPlugin.LoadAssetBundle`, `BaseUnityPlugin.LoadAssetBundleAsync`, `StubbedShaderSwapper`
-
-### Project Structure
-Use plugin components to organize your project and even generate customizable configuration files.
-> See: `PluginComponent` attribute, `BepInConfig` attribute
+Quickly and safely define items, equipment, artifacts, and more.
+> See: `ContentPackExtensions`, `ItemExtensions`, `EquipmentExtensions`, etc.
 
 ### Asynchronous Framework
-Simple API to load vanilla RoR2 assets synchronously or asynchronously.
-> See: `RoR2Asset`, `RoR2AssetGroup`
+Implement simple asynchronous content loading.
+> See: `BaseContentPlugin`
+
+### Modular Codebase
+Organize your mod into modular components that can be individually managed.
+> See: `BaseModule` attribute
 
 ### Language
 Create formatted and easily translatable language files directly within your project.
 > See: `LanguageStrings` attribute
 
+### Miscellaneous Utils
+A collection of static and extension methods to handle common operations.
+> See: `Ivyl`
+
 ### And More!
 IVYL is a work-in-progress! Expect improvements over time
 
 ## Contact
-Don't hesitate to reach out! You can find me in the [Spikestrip Modding Server](https://discord.gg/me7P53smzk) @Groove_Salad
+For questions, suggestions, or feedback, you can find me in the [RoR2 Modding Server](https://discord.gg/5MbXZvd) @Groove_Salad or through the [GitHub](https://github.com/Priscillalala/IvyLibrary)
+
+Even if it's just a documentation typo (*especially* if it's just a documentation typo), don't hesistate to reach out!
