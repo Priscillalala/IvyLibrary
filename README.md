@@ -28,4 +28,4 @@ IVYL is a work-in-progress! Expect improvements over time
 ## Contact
 For questions, suggestions, or feedback, you can find me in the [RoR2 Modding Server](https://discord.gg/5MbXZvd) @Groove_Salad or through the [GitHub](https://github.com/Priscillalala/IvyLibrary)
 
-Even if it's just a documentation typo (*especially* if it's just a documentation typo), don't hesistate to reach out!
+Even if it's just a documentation typo (*especially* if it's just a documentation typo), don't hesitate to reach out!
