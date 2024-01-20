@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using UnityEngine;
 
 namespace IvyLibrary
 {
@@ -17,8 +21,24 @@ namespace IvyLibrary
 
         public ModularBehaviour()
         {
-            Metadata = BaseModuleAttribute.earlyAssignmentMetadata;
-            BaseModuleAttribute.earlyAssignmentMetadata = null;
+            if (BaseModuleAttribute.earlyAssignmentMetadata != null)
+            {
+                Metadata = BaseModuleAttribute.earlyAssignmentMetadata;
+                BaseModuleAttribute.earlyAssignmentMetadata = null;
+            }
+            else
+            {
+                List<HG.Reflection.SearchableAttribute> attributes = HG.Reflection.SearchableAttribute.GetInstances<BaseModuleAttribute>();
+                if (attributes != null)
+                {
+                    Type type = GetType();
+                    Metadata = (BaseModuleAttribute)attributes.FirstOrDefault(x => x.target is Type moduleType && moduleType == type);
+                }
+                if (Metadata == null)
+                {
+                    Debug.LogWarning($"Could not locate metadata for {nameof(ModularBehaviour)} instance of type {GetType().Name}!");
+                }
+            }
         }
     }
 }

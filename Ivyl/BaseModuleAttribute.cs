@@ -16,6 +16,7 @@ namespace IvyLibrary
     /// <item>Add this attribute to behaviour classes (e.g., <see cref="Behaviour"/>, <see cref="MonoBehaviour"/>, <see cref="ModularBehaviour"/>, or derived) in your codebase</item>
     /// <item>Initialize all modules with <see cref="InitializeModules(Type, object[])"/> or an overload (usually during plugin Awake)</item>
     /// </list>
+    /// <para><see cref="BaseModuleAttribute"/> is a <see cref="HG.Reflection.SearchableAttribute"/>. <see cref="HG.Reflection.SearchableAttribute.OptInAttribute"/> must be present.</para>
     /// </remarks>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public abstract class BaseModuleAttribute : HG.Reflection.SearchableAttribute
@@ -90,7 +91,7 @@ namespace IvyLibrary
                 if (targetBlacklist.Add(attribute.target) && attribute.Initialize(args, attributesList))
                 {
                     earlyAssignmentMetadata = attribute;
-                    managerObject.AddComponent(moduleType);
+                    managerObject.RequireComponent(moduleType);
                     earlyAssignmentMetadata = null;
                 }
             }
