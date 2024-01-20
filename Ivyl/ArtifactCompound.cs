@@ -1,5 +1,8 @@
-﻿namespace Ivyl
+﻿namespace IvyLibrary
 {
+    /// <summary>
+    /// Different compounds for an artifact portal dialer.
+    /// </summary>
     public enum ArtifactCompound
     {
         Circle = 1,

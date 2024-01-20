@@ -1,7 +1,10 @@
 ﻿using UnityEngine;
 
-namespace Ivyl
+namespace IvyLibrary
 {
+    /// <summary>
+    /// Represents key fields of the <see cref="RoR2.ModelPanelParameters"/> component.
+    /// </summary>
     public struct ModelPanelParams
     {
         public Quaternion modelRotation;

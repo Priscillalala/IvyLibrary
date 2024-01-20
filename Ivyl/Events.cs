@@ -1,15 +1,11 @@
 ﻿using System;
 using UnityEngine;
 using RoR2;
-using UnityEngine.AddressableAssets;
-using UnityEngine.ResourceManagement.AsyncOperations;
-using RoR2.ExpansionManagement;
-using UnityEngine.Networking;
 using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using RoR2.Projectile;
 
-namespace Ivyl
+namespace IvyLibrary
 {
     public static class Events
     {
@@ -20,6 +16,9 @@ namespace Ivyl
             private static event HitEnemyAcceptedDelegate _onHitEnemyAcceptedServer;
             private static bool set_onHitEnemyAcceptedServer;
 
+            /// <summary>
+            /// Occurs during <see cref="RoR2.GlobalEventManager.OnHitEnemy(DamageInfo, GameObject)"/>, after the initial checks have been passed.
+            /// </summary>
             public static event HitEnemyAcceptedDelegate onHitEnemyAcceptedServer 
             {
                 add
@@ -72,6 +71,9 @@ namespace Ivyl
             private static event ModifyDamageDelegate _onModifyDamageServer;
             private static bool set_onModifyDamageServer;
 
+            /// <summary>
+            /// Occurs during <see cref="RoR2.HealthComponent.TakeDamage(DamageInfo)"/> when damage modifiers (e.g., Focus Crystal, Armor-Piercing Rounds) are being applied.
+            /// </summary>
             public static event ModifyDamageDelegate onModifyDamageServer
             {
                 add

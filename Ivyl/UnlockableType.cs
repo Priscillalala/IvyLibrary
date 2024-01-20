@@ -1,9 +1,11 @@
 ﻿using System;
-using RoR2;
 
-namespace Ivyl
+namespace IvyLibrary
 {
-	public struct UnlockableType : IEquatable<UnlockableType>, IEquatable<string>
+	/// <summary>
+	/// The standard unlockables types, with implicit conversion from strings for custom unlockable types.
+	/// </summary>
+    public struct UnlockableType : IEquatable<UnlockableType>, IEquatable<string>
 	{
 		public static readonly UnlockableType Items = "Items";
 		public static readonly UnlockableType Logs = "Logs";
@@ -55,6 +57,7 @@ namespace Ivyl
 		{
 			return a.Equals(b);
 		}
+
 		public static bool operator !=(UnlockableType a, UnlockableType b)
 		{
 			return !a.Equals(b);

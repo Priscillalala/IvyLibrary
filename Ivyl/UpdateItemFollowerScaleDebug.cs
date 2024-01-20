@@ -1,19 +1,14 @@
-﻿using BepInEx;
-using System;
-using System.IO;
-using System.Reflection;
-using Mono.Cecil;
-using MonoMod.Cil;
-using BepInEx.Bootstrap;
-using Mono.Cecil.Cil;
-using UnityEngine;
-using System.Collections.Generic;
+﻿using UnityEngine;
 using RoR2;
-using UnityEngine.AddressableAssets;
-using System.Linq;
 
-namespace Ivyl
+namespace IvyLibrary
 {
+    /// <summary>
+    /// A component to update the scale of an item follower while creating item display rules.
+    /// </summary>
+    /// <remarks>
+    /// Should not be included in releases.
+    /// </remarks>
     public class UpdateItemFollowerScaleDebug : MonoBehaviour
     {
         private ItemFollower itemFollower;
@@ -31,5 +26,4 @@ namespace Ivyl
             }
         }
     }
-
 }
