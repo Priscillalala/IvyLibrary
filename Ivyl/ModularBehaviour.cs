@@ -12,7 +12,7 @@ namespace IvyLibrary
     /// <remarks>
     /// This class is can be optionally implemented alongside a <see cref="BaseModuleAttribute"/> to avoid reflection.
     /// </remarks>
-    public class ModularBehaviour : MonoBehaviour
+    public abstract class ModularBehaviour : MonoBehaviour
     {
         /// <summary>
         /// The <see cref="BaseModuleAttribute"/> instance applied to this class.
