@@ -62,12 +62,11 @@ namespace IvyLibrary
         /// </summary>
         public static void AddEntityStatesFromAssembly(this ContentPack contentPack, Assembly assembly)
         {
-            Type[] types = assembly.GetTypes();
-            for (int i = 0; i < types.Length; i++)
+            foreach (Type type in assembly.GetTypes())
             {
-                if (types[i].IsSubclassOf(typeof(EntityState)))
+                if (type.IsSubclassOf(typeof(EntityState)) && !type.IsAbstract)
                 {
-                    contentPack.entityStateTypes.Add(types[i]);
+                    contentPack.entityStateTypes.Add(type);
                 }
             }
         }

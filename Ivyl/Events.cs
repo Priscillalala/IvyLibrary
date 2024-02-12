@@ -118,6 +118,7 @@ namespace IvyLibrary
                         _onModifyDamageServer?.Invoke(victim, damageInfo, ref damage);
                         return damage;
                     });
+                    c.Emit(OpCodes.Stloc, locDamageIndex);
                 }
                 else Debug.LogError($"{nameof(Events)}: {nameof(HealthComponent_TakeDamage)} IL hook failed!");
             }

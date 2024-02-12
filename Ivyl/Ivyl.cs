@@ -48,15 +48,25 @@ namespace IvyLibrary
             On.RoR2.Util.IsPrefab += (orig, gameObject) => orig(gameObject) || gameObject.transform.parent == _prefabParent;
         }
 
-        /// <summary>
-        /// Create an empty prefab.
-        /// </summary>
-        /// <param name="name">The name of this prefab.</param>
-        /// <returns>The newly-created prefab.</returns>
+        /// <inheritdoc cref="CreatePrefab(string, Type[])"/>
         public static GameObject CreatePrefab(string name)
         {
             InitPrefabParent();
             GameObject prefab = new GameObject(name);
+            prefab.transform.SetParent(_prefabParent);
+            return prefab;
+        }
+
+        /// <summary>
+        /// Create an empty prefab.
+        /// </summary>
+        /// <param name="name">The name of this prefab.</param>
+        /// <param name="components">Components to add to the prefab on creation.</param>
+        /// <returns>The newly-created prefab.</returns>
+        public static GameObject CreatePrefab(string name, params Type[] components)
+        {
+            InitPrefabParent();
+            GameObject prefab = new GameObject(name, components);
             prefab.transform.SetParent(_prefabParent);
             return prefab;
         }
@@ -356,7 +366,7 @@ namespace IvyLibrary
         /// Useful for implementing soft compatibility with mods.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool IsModLoaded(string guid) => Chainloader.PluginInfos.ContainsKey(guid);
+        public static bool ModLoaded(string guid) => Chainloader.PluginInfos.ContainsKey(guid);
 
         /// <summary>
         /// A variant of <see cref="NamedAssetCollection{TAsset}.Add(TAsset[])"/> that takes a single asset.
@@ -511,11 +521,7 @@ namespace IvyLibrary
         /// <returns>A reference to the <see cref="ItemDisplayRuleSet.KeyAssetRuleGroup"/> that contains the new <see cref="ItemDisplayRule"/>.</returns>
         public static ref ItemDisplayRuleSet.KeyAssetRuleGroup AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec itemDisplay, ItemDisplayTransform itemDisplayTransform = default)
         {
-            if (!itemDisplay.keyAsset)
-            {
-                throw new ArgumentException(nameof(itemDisplay));
-            }
-            ItemDisplayRule itemDisplayRule = new ItemDisplayRule
+            return ref AddDisplayRule(idrs, itemDisplay.keyAsset, new ItemDisplayRule
             {
                 followerPrefab = itemDisplay.displayModelPrefab,
                 childName = itemDisplayTransform.childName ?? "Base",
@@ -524,30 +530,39 @@ namespace IvyLibrary
                 localScale = itemDisplayTransform.localScale ?? Vector3.one,
                 limbMask = itemDisplay.limbMask,
                 ruleType = itemDisplay.limbMask > LimbFlags.None ? ItemDisplayRuleType.LimbMask : ItemDisplayRuleType.ParentedPrefab
-            };
-            for (int i = idrs.keyAssetRuleGroups.Length - 1; i >= 0; i--)
-            {
-                if (idrs.keyAssetRuleGroups[i].keyAsset == itemDisplay.keyAsset)
-                {
-                    idrs.keyAssetRuleGroups[i].displayRuleGroup.AddDisplayRule(itemDisplayRule);
-                    return ref idrs.keyAssetRuleGroups[i];
-                }
-            }
-            ArrayUtils.ArrayAppend(ref idrs.keyAssetRuleGroups, new ItemDisplayRuleSet.KeyAssetRuleGroup
-            {
-                keyAsset = itemDisplay.keyAsset,
-                displayRuleGroup = new DisplayRuleGroup
-                {
-                    rules = new[] { itemDisplayRule }
-                }
             });
-            return ref idrs.keyAssetRuleGroups[idrs.keyAssetRuleGroups.Length - 1];
         }
 
         /// <inheritdoc cref="AddDisplayRule(ItemDisplayRuleSet, ItemDisplaySpec, ItemDisplayTransform)"/>
         public static ref ItemDisplayRuleSet.KeyAssetRuleGroup AddDisplayRule(this ItemDisplayRuleSet idrs, ItemDisplaySpec itemDisplay, string childName, Vector3 localPos, Vector3 localAngles, Vector3 localScale)
         {
             return ref AddDisplayRule(idrs, itemDisplay, new ItemDisplayTransform(childName, localPos, localAngles, localScale));
+        }
+
+        /// <inheritdoc cref="AddDisplayRule(ItemDisplayRuleSet, ItemDisplaySpec, ItemDisplayTransform)"/>
+        public static ref ItemDisplayRuleSet.KeyAssetRuleGroup AddDisplayRule(this ItemDisplayRuleSet idrs, UnityEngine.Object keyAsset, ItemDisplayRule displayRule)
+        {
+            if (!keyAsset)
+            {
+                throw new ArgumentException(nameof(keyAsset));
+            }
+            for (int i = idrs.keyAssetRuleGroups.Length - 1; i >= 0; i--)
+            {
+                if (idrs.keyAssetRuleGroups[i].keyAsset == keyAsset)
+                {
+                    idrs.keyAssetRuleGroups[i].displayRuleGroup.AddDisplayRule(displayRule);
+                    return ref idrs.keyAssetRuleGroups[i];
+                }
+            }
+            ArrayUtils.ArrayAppend(ref idrs.keyAssetRuleGroups, new ItemDisplayRuleSet.KeyAssetRuleGroup
+            {
+                keyAsset = keyAsset,
+                displayRuleGroup = new DisplayRuleGroup
+                {
+                    rules = new[] { displayRule }
+                }
+            });
+            return ref idrs.keyAssetRuleGroups[idrs.keyAssetRuleGroups.Length - 1];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

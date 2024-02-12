@@ -13,7 +13,7 @@ namespace IvyLibrary
     /// <list type="bullet">
     /// <item>Define an attribute inheriting from <see cref="BaseModuleAttribute"/></item>
     /// <item>Implement <see cref="Initialize(object[], List{HG.Reflection.SearchableAttribute})"/> to define modularity</item>
-    /// <item>Add this attribute to behaviour classes (e.g., <see cref="Behaviour"/>, <see cref="MonoBehaviour"/>, <see cref="ModularBehaviour"/>, or derived) in your codebase</item>
+    /// <item>Add this attribute to component classes (e.g., <see cref="Component"/>, <see cref="MonoBehaviour"/>, <see cref="ModularBehaviour"/>, or derived) in your codebase</item>
     /// <item>Initialize all modules with <see cref="InitializeModules(Type, object[])"/> or an overload (usually during plugin Awake)</item>
     /// </list>
     /// <para><see cref="BaseModuleAttribute"/> is a <see cref="HG.Reflection.SearchableAttribute"/>. <see cref="HG.Reflection.SearchableAttribute.OptInAttribute"/> must be present.</para>
@@ -48,7 +48,7 @@ namespace IvyLibrary
         /// A new module manager object will be parented to the <see cref="Chainloader.ManagerObject"/>, if present.
         /// </remarks>
         /// <inheritdoc cref="InitializeModules(Type, GameObject, object[])"/>
-        /// <returns>A manager <see cref="GameObject"/> with all modular behaviours attached.</returns>
+        /// <returns>A manager <see cref="GameObject"/> with all modular components attached.</returns>
         public static GameObject InitializeModules(Type attributeType, params object[] args)
         {
             GameObject managerObject = new GameObject($"{attributeType.Name}_Manager");
@@ -83,9 +83,9 @@ namespace IvyLibrary
             HashSet<object> targetBlacklist = new HashSet<object>();
             foreach (BaseModuleAttribute attribute in attributesList)
             {
-                if (attribute.target is not Type moduleType || !moduleType.IsSubclassOf(typeof(Behaviour)))
+                if (attribute.target is not Type moduleType || !moduleType.IsSubclassOf(typeof(Component)))
                 {
-                    Debug.LogWarning($"{nameof(BaseModuleAttribute)}: Module of type {attributeType.Name} has an invalid target ({attribute.target ?? "null"}). Target must be a class inheriting from {nameof(Behaviour)}.");
+                    Debug.LogWarning($"{nameof(BaseModuleAttribute)}: Module of type {attributeType.Name} has an invalid target ({attribute.target ?? "null"}). Target must be a class inheriting from {nameof(Component)}.");
                     continue;
                 }
                 if (targetBlacklist.Add(attribute.target) && attribute.Initialize(args, attributesList))
@@ -100,7 +100,7 @@ namespace IvyLibrary
         internal static BaseModuleAttribute earlyAssignmentMetadata;
 
         /// <summary>
-        /// Implement this method to determine when this modular behaviour can be instantiated.
+        /// Implement this method to determine when this modular component can be instantiated.
         /// </summary>
         /// <param name="args">Additional arguments optionally provided at module initialization time.</param>
         /// <param name="peers">All module attributes of this type; includes this attribute and may include duplicates.</param>

@@ -21,9 +21,9 @@ namespace IvyLibrary
 
         string IContentPackProvider.identifier => Info.Metadata.GUID;
 
-        public delegate IEnumerator LoadStaticContentAsyncDelegate(LoadStaticContentAsyncArgs args);
-        public delegate IEnumerator GenerateContentPackAsyncDelegate(GetContentPackAsyncArgs args);
-        public delegate IEnumerator FinalizeAsyncDelegate(FinalizeAsyncArgs args);
+        public delegate IEnumerator LoadStaticContentAsyncDelegate(ContentPack content, LoadStaticContentAsyncArgs args);
+        public delegate IEnumerator GenerateContentPackAsyncDelegate(ContentPack content, GetContentPackAsyncArgs args);
+        public delegate IEnumerator FinalizeAsyncDelegate(ContentPack content, FinalizeAsyncArgs args);
 
         /// <summary>
         /// Subscribers are yielded in parallel during <see cref="IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs)"/>.
@@ -65,7 +65,7 @@ namespace IvyLibrary
                     {
                         ReadableProgress<float> readableProgress = new ReadableProgress<float>();
                         parallelProgressCoroutine.Add(
-                            func(new LoadStaticContentAsyncArgs(readableProgress, args.peerLoadInfos)),
+                            func(Content, new LoadStaticContentAsyncArgs(readableProgress, args.peerLoadInfos)),
                             readableProgress);
                     }
                 }
@@ -95,7 +95,7 @@ namespace IvyLibrary
                     {
                         ReadableProgress<float> readableProgress = new ReadableProgress<float>();
                         parallelProgressCoroutine.Add(
-                            func(new GetContentPackAsyncArgs(readableProgress, args.output, args.peerLoadInfos, args.retriesRemaining)),
+                            func(Content, new GetContentPackAsyncArgs(readableProgress, args.output, args.peerLoadInfos, args.retriesRemaining)),
                             readableProgress);
                     }
                 }
@@ -126,7 +126,7 @@ namespace IvyLibrary
                     {
                         ReadableProgress<float> readableProgress = new ReadableProgress<float>();
                         parallelProgressCoroutine.Add(
-                            func(new FinalizeAsyncArgs(readableProgress, args.peerLoadInfos, args.finalContentPack)),
+                            func(Content, new FinalizeAsyncArgs(readableProgress, args.peerLoadInfos, args.finalContentPack)),
                             readableProgress);
                     }
                 }
