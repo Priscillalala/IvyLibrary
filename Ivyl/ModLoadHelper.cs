@@ -5,6 +5,7 @@ using System;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine;
 using System.Collections.Generic;
+using HG;
 
 namespace IvyLibrary
 {
@@ -61,6 +62,10 @@ namespace IvyLibrary
                 IEnumerator operation = genericOperation.getOperation();
                 while (operation.MoveNext())
                 {
+                    if (genericOperation.operationProgressReceiver != null)
+                    {
+                        SetProgress((completedWeight + (genericOperation.weight * genericOperation.operationProgressReceiver.value)) / totalWeight);
+                    }
                     yield return operation.Current;
                 }
                 SetProgress((completedWeight += genericOperation.weight) / totalWeight);
@@ -398,14 +403,20 @@ namespace IvyLibrary
         public void AddLoadOperations(params AsyncOperation[] loadOperations) => AddLoadOperations(1f, loadOperations);
         #endregion
 
-        public void AddGenericOperation(Func<IEnumerator> operation, float weight = 0.1f)
+        public void AddGenericOperation(Func<IEnumerator> operation, float weight = 1f, ReadableProgress<float> operationProgressReceiver = null)
         {
             genericOperations.Add(new GenericOperation
             {
                 getOperation = operation,
                 weight = weight,
+                operationProgressReceiver = operationProgressReceiver,
             });
             totalWeight += weight;
+        }
+
+        public void AddGenericOperation(IEnumerator operation, float weight = 1f, ReadableProgress<float> operationProgressReceiver = null)
+        {
+            AddGenericOperation(() => operation, weight, operationProgressReceiver);
         }
 
         public void AddGenericOperation(Action operation, float weight = 0.05f)
@@ -454,6 +465,7 @@ namespace IvyLibrary
         {
             public Func<IEnumerator> getOperation;
             public float weight;
+            public ReadableProgress<float> operationProgressReceiver;
         }
 
         object IEnumerator.Current => coroutine.Current;

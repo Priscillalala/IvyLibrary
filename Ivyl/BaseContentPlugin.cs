@@ -54,18 +54,18 @@ namespace IvyLibrary
         /// The default implementation invokes <see cref="loadStaticContentAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>. This behavior can be overridden.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual IEnumerator LoadStaticContentAsync(LoadStaticContentAsyncArgs args)
+        protected virtual IEnumerator LoadStaticContentAsync(IProgress<float> progressReceiver, ReadOnlyArray<ContentPackLoadInfo> peerLoadInfos)
         {
             if (loadStaticContentAsync != null)
             {
-                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(args.progressReceiver);
+                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(progressReceiver);
                 foreach (LoadStaticContentAsyncDelegate func in loadStaticContentAsync.GetInvocationList())
                 {
                     if (func != null)
                     {
                         ReadableProgress<float> readableProgress = new ReadableProgress<float>();
                         parallelProgressCoroutine.Add(
-                            func(Content, new LoadStaticContentAsyncArgs(readableProgress, args.peerLoadInfos)),
+                            func(Content, new LoadStaticContentAsyncArgs(readableProgress, peerLoadInfos)),
                             readableProgress);
                     }
                 }
@@ -84,18 +84,18 @@ namespace IvyLibrary
         /// The default implementation invokes <see cref="generateContentPackAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>, then outputs <see cref="Content"/>. This behavior can be overridden.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual IEnumerator GenerateContentPackAsync(GetContentPackAsyncArgs args)
+        protected virtual IEnumerator GenerateContentPackAsync(IProgress<float> progressReceiver, ContentPack output, ReadOnlyArray<ContentPackLoadInfo> peerLoadInfos, int retriesRemaining)
         {
             if (generateContentPackAsync != null)
             {
-                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(args.progressReceiver);
+                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(progressReceiver);
                 foreach (GenerateContentPackAsyncDelegate func in generateContentPackAsync.GetInvocationList())
                 {
                     if (func != null)
                     {
                         ReadableProgress<float> readableProgress = new ReadableProgress<float>();
                         parallelProgressCoroutine.Add(
-                            func(Content, new GetContentPackAsyncArgs(readableProgress, args.output, args.peerLoadInfos, args.retriesRemaining)),
+                            func(Content, new GetContentPackAsyncArgs(readableProgress, output, peerLoadInfos, retriesRemaining)),
                             readableProgress);
                     }
                 }
@@ -104,7 +104,7 @@ namespace IvyLibrary
                     yield return parallelProgressCoroutine.Current;
                 }
             }
-            ContentPack.Copy(Content, args.output);
+            ContentPack.Copy(Content, output);
         }
 
         /// <summary>
@@ -114,19 +114,19 @@ namespace IvyLibrary
         /// The default implementation invokes <see cref="finalizeAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>, then populates the asset ids of networked objects in <see cref="Content"/>. This behavior can be overridden.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual IEnumerator FinalizeAsync(FinalizeAsyncArgs args)
+        protected virtual IEnumerator FinalizeAsync(IProgress<float> progressReceiver, ReadOnlyArray<ContentPackLoadInfo> peerLoadInfos, ReadOnlyContentPack finalContentPack)
         {
             generateContentPackAsync = null;
             if (finalizeAsync != null)
             {
-                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(args.progressReceiver);
+                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(progressReceiver);
                 foreach (FinalizeAsyncDelegate func in finalizeAsync.GetInvocationList())
                 {
                     if (func != null)
                     {
                         ReadableProgress<float> readableProgress = new ReadableProgress<float>();
                         parallelProgressCoroutine.Add(
-                            func(Content, new FinalizeAsyncArgs(readableProgress, args.peerLoadInfos, args.finalContentPack)),
+                            func(Content, new FinalizeAsyncArgs(readableProgress, peerLoadInfos, finalContentPack)),
                             readableProgress);
                     }
                 }
@@ -139,10 +139,10 @@ namespace IvyLibrary
             Content.PopulateNetworkedObjectAssetIds();
         }
 
-        IEnumerator IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs args) => LoadStaticContentAsync(args);
+        IEnumerator IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs args) => LoadStaticContentAsync(args.progressReceiver, args.peerLoadInfos);
 
-        IEnumerator IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs args) => GenerateContentPackAsync(args);
+        IEnumerator IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs args) => GenerateContentPackAsync(args.progressReceiver, args.output, args.peerLoadInfos, args.retriesRemaining);
 
-        IEnumerator IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs args) => FinalizeAsync(args);
+        IEnumerator IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs args) => FinalizeAsync(args.progressReceiver, args.peerLoadInfos, args.finalContentPack);
     }
 }
