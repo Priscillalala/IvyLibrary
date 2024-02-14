@@ -279,6 +279,18 @@ namespace IvyLibrary
             return request = assetBundle.LoadAssetAsync<T>(name).Convert<T>();
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static AssetBundleRequest<T> LoadAsync<T>(this AssetBundle assetBundle, string name) where T : UnityEngine.Object
+        {
+            return assetBundle.LoadAssetAsync<T>(name).Convert<T>();
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static AssetBundleRequest<T> LoadAllAsync<T>(this AssetBundle assetBundle) where T : UnityEngine.Object
+        {
+            return assetBundle.LoadAllAssetsAsync<T>().Convert<T>();
+        }
+
         /// <summary>
         /// Create an additional configuration file for this plugin.
         /// </summary>
@@ -635,6 +647,75 @@ namespace IvyLibrary
                 return true;
             }
             return false;
+        }
+
+        public static bool MoveNext(this ValueTuple<IEnumerator> tuple) => tuple.Item1.MoveNext();
+
+        public static bool MoveNext(this ValueTuple<IEnumerator, IEnumerator> tuple) 
+            => tuple.Item1.MoveNext() 
+            || tuple.Item2.MoveNext();
+
+        public static bool MoveNext(this ValueTuple<IEnumerator, IEnumerator, IEnumerator> tuple) 
+            => tuple.Item1.MoveNext() 
+            || tuple.Item2.MoveNext()
+            || tuple.Item3.MoveNext();
+
+        public static bool MoveNext(this ValueTuple<IEnumerator, IEnumerator, IEnumerator, IEnumerator> tuple)
+            => tuple.Item1.MoveNext()
+            || tuple.Item2.MoveNext()
+            || tuple.Item3.MoveNext()
+            || tuple.Item4.MoveNext();
+
+        public static bool MoveNext(this ValueTuple<IEnumerator, IEnumerator, IEnumerator, IEnumerator, IEnumerator> tuple)
+            => tuple.Item1.MoveNext()
+            || tuple.Item2.MoveNext()
+            || tuple.Item3.MoveNext()
+            || tuple.Item4.MoveNext()
+            || tuple.Item5.MoveNext();
+
+        public static bool MoveNext(this ValueTuple<IEnumerator, IEnumerator, IEnumerator, IEnumerator, IEnumerator, IEnumerator> tuple)
+            => tuple.Item1.MoveNext()
+            || tuple.Item2.MoveNext()
+            || tuple.Item3.MoveNext()
+            || tuple.Item4.MoveNext()
+            || tuple.Item5.MoveNext()
+            || tuple.Item6.MoveNext();
+
+        public static bool MoveNext(this ValueTuple<IEnumerator, IEnumerator, IEnumerator, IEnumerator, IEnumerator, IEnumerator, IEnumerator> tuple)
+            => tuple.Item1.MoveNext()
+            || tuple.Item2.MoveNext()
+            || tuple.Item3.MoveNext()
+            || tuple.Item4.MoveNext()
+            || tuple.Item5.MoveNext()
+            || tuple.Item6.MoveNext()
+            || tuple.Item7.MoveNext();
+
+        public static bool MoveNext<TRest>(this ValueTuple<IEnumerator, IEnumerator, IEnumerator, IEnumerator, IEnumerator, IEnumerator, IEnumerator, TRest> tuple)
+            where TRest : struct
+        {
+            if (tuple.Item1.MoveNext()
+                || tuple.Item2.MoveNext()
+                || tuple.Item3.MoveNext()
+                || tuple.Item4.MoveNext()
+                || tuple.Item5.MoveNext()
+                || tuple.Item6.MoveNext()
+                || tuple.Item7.MoveNext())
+            {
+                return true;
+            }
+            return tuple.Rest switch
+            {
+                ValueTuple => false,
+                ValueTuple<IEnumerator> rest => rest.MoveNext(),
+                ValueTuple<IEnumerator, IEnumerator> rest => rest.MoveNext(),
+                ValueTuple<IEnumerator, IEnumerator, IEnumerator> rest => rest.MoveNext(),
+                _ => throw new ArgumentException($"Not a coroutine tuple.")
+            };
+        }
+
+        public static object Current(this (IEnumerator, IEnumerator) tuple)
+        {
+            return tuple.Item1.Current ?? tuple.Item2.Current;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
