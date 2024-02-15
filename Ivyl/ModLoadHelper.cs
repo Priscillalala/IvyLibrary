@@ -12,13 +12,13 @@ namespace IvyLibrary
     public class ModLoadHelper : IEnumerator
     {
         private readonly List<BaseLoadOperation> loadOperations = new List<BaseLoadOperation>();
-        private readonly List<GenericOperation> genericOperations = new List<GenericOperation>();
+        private readonly List<BaseGenericOperation> genericOperations = new List<BaseGenericOperation>();
         public readonly IEnumerator coroutine;
         private IProgress<float> progressReceiver;
         private float totalWeight;
         private float completedWeight;
 
-        public float progress { get; private set; } 
+        public float progress { get; private set; }
 
         public ModLoadHelper()
         {
@@ -29,12 +29,6 @@ namespace IvyLibrary
         {
             this.progressReceiver = progressReceiver;
         }
-
-        public ModLoadHelper(LoadStaticContentAsyncArgs args) : this(args.progressReceiver) { }
-
-        public ModLoadHelper(GetContentPackAsyncArgs args) : this(args.progressReceiver) { }
-
-        public ModLoadHelper(FinalizeAsyncArgs args) : this(args.progressReceiver) { }
 
         private IEnumerator Coroutine()
         {
@@ -57,16 +51,19 @@ namespace IvyLibrary
                 }
                 SetProgress((completedWeight + currentProgressWeight) / totalWeight);
             }
-            foreach (GenericOperation genericOperation in genericOperations)
+            foreach (BaseGenericOperation genericOperation in genericOperations)
             {
-                IEnumerator operation = genericOperation.getOperation();
-                while (operation.MoveNext())
+                IEnumerator operation = genericOperation.Execute();
+                if (operation != null)
                 {
-                    if (genericOperation.operationProgressReceiver != null)
+                    while (operation.MoveNext())
                     {
-                        SetProgress((completedWeight + (genericOperation.weight * genericOperation.operationProgressReceiver.value)) / totalWeight);
+                        if (genericOperation.progressReceiver != null)
+                        {
+                            SetProgress((completedWeight + (genericOperation.weight * genericOperation.progressReceiver.value)) / totalWeight);
+                        }
+                        yield return operation.Current;
                     }
-                    yield return operation.Current;
                 }
                 SetProgress((completedWeight += genericOperation.weight) / totalWeight);
             }
@@ -81,21 +78,18 @@ namespace IvyLibrary
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddLoadOperation(IEnumerator loadOperation, float weight = 1f) => AddLoadOperation(new CoroutineWrapper
         {
             coroutine = loadOperation,
             weight = weight,
         });
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddLoadOperation(AsyncOperation loadOperation, float weight = 1f) => AddLoadOperation(new UnityAsyncOperationWrapper
         {
             asyncOperation = loadOperation,
             weight = weight,
         });
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddLoadOperation(AsyncOperationHandle loadOperation, float weight = 1f) => AddLoadOperation(new ResourcesAsyncOperationWrapper
         {
             asyncOperation = loadOperation.InternalOp,
@@ -221,7 +215,7 @@ namespace IvyLibrary
             AddLoadOperation(loadOperations.Item7, weightPer);
         }
 
-        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, 
+        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle,
             ValueTuple<AsyncOperationHandle>> loadOperations, float weightPer = 1f)
         {
             AddLoadOperation(loadOperations.Item1, weightPer);
@@ -234,7 +228,7 @@ namespace IvyLibrary
             AddLoadOperation(loadOperations.Item8, weightPer);
         }
 
-        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, 
+        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle,
             ValueTuple<AsyncOperationHandle, AsyncOperationHandle>> loadOperations, float weightPer = 1f)
         {
             AddLoadOperation(loadOperations.Item1, weightPer);
@@ -248,7 +242,7 @@ namespace IvyLibrary
             AddLoadOperation(loadOperations.Item9, weightPer);
         }
 
-        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, 
+        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle,
             ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle>> loadOperations, float weightPer = 1f)
         {
             AddLoadOperation(loadOperations.Item1, weightPer);
@@ -263,7 +257,7 @@ namespace IvyLibrary
             AddLoadOperation(loadOperations.Item10, weightPer);
         }
 
-        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, 
+        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle,
             ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle>> loadOperations, float weightPer = 1f)
         {
             AddLoadOperation(loadOperations.Item1, weightPer);
@@ -279,7 +273,7 @@ namespace IvyLibrary
             AddLoadOperation(loadOperations.Item11, weightPer);
         }
 
-        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, 
+        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle,
             ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle>> loadOperations, float weightPer = 1f)
         {
             AddLoadOperation(loadOperations.Item1, weightPer);
@@ -296,7 +290,7 @@ namespace IvyLibrary
             AddLoadOperation(loadOperations.Item12, weightPer);
         }
 
-        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, 
+        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle,
             ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle>> loadOperations, float weightPer = 1f)
         {
             AddLoadOperation(loadOperations.Item1, weightPer);
@@ -313,7 +307,7 @@ namespace IvyLibrary
             AddLoadOperation(loadOperations.Item12, weightPer);
             AddLoadOperation(loadOperations.Item13, weightPer);
         }
-        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, 
+        public void AddLoadOperations(ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle,
             ValueTuple<AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle, AsyncOperationHandle>> loadOperations, float weightPer = 1f)
         {
             AddLoadOperation(loadOperations.Item1, weightPer);
@@ -403,30 +397,31 @@ namespace IvyLibrary
         public void AddLoadOperations(params AsyncOperation[] loadOperations) => AddLoadOperations(1f, loadOperations);
         #endregion
 
-        public void AddGenericOperation(Func<IEnumerator> operation, float weight = 1f, ReadableProgress<float> operationProgressReceiver = null)
+        public void AddGenericOperation(Func<IEnumerator> operation, float weight = 1f, ReadableProgress<float> operationProgressReceiver = null) => AddGenericOperation(new DelayedGenericCoroutine
         {
-            genericOperations.Add(new GenericOperation
-            {
-                getOperation = operation,
-                weight = weight,
-                operationProgressReceiver = operationProgressReceiver,
-            });
-            totalWeight += weight;
-        }
+            getOperation = operation,
+            weight = weight,
+            progressReceiver = operationProgressReceiver,
+        });
 
-        public void AddGenericOperation(IEnumerator operation, float weight = 1f, ReadableProgress<float> operationProgressReceiver = null)
+        public void AddGenericOperation(IEnumerator operation, float weight = 1f, ReadableProgress<float> operationProgressReceiver = null) => AddGenericOperation(new ImmediateGenericCoroutine
         {
-            AddGenericOperation(() => operation, weight, operationProgressReceiver);
-        }
+            operation = operation,
+            weight = weight,
+            progressReceiver = operationProgressReceiver,
+        });
 
-        public void AddGenericOperation(Action operation, float weight = 0.05f)
+        public void AddGenericOperation(Action operation, float weight = 0.05f) => AddGenericOperation(new DelayedGenericAction
         {
-            IEnumerator Coroutine()
-            {
-                operation();
-                yield break;
-            }
-            AddGenericOperation(Coroutine, weight);
+            operation = operation,
+            weight = weight,
+        });
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void AddGenericOperation(BaseGenericOperation operation)
+        {
+            genericOperations.Add(operation);
+            totalWeight += operation.weight;
         }
 
         public abstract class BaseLoadOperation
@@ -461,12 +456,45 @@ namespace IvyLibrary
             public IAsyncOperation asyncOperation;
         }
 
-        public struct GenericOperation
+        public abstract class BaseGenericOperation
+        {
+            public ReadableProgress<float> progressReceiver;
+            public float weight;
+
+            public abstract IEnumerator Execute();
+        }
+
+        public class DelayedGenericCoroutine : BaseGenericOperation
+        {
+            public Func<IEnumerator> getOperation;
+
+            public override IEnumerator Execute() => getOperation();
+        }
+
+        public class ImmediateGenericCoroutine : BaseGenericOperation
+        {
+            public IEnumerator operation;
+
+            public override IEnumerator Execute() => operation;
+        }
+
+        public class DelayedGenericAction : BaseGenericOperation
+        {
+            public Action operation;
+
+            public override IEnumerator Execute()
+            {
+                operation();
+                return null;
+            }
+        }
+
+        /*public struct GenericOperation
         {
             public Func<IEnumerator> getOperation;
             public float weight;
             public ReadableProgress<float> operationProgressReceiver;
-        }
+        }*/
 
         object IEnumerator.Current => coroutine.Current;
 
