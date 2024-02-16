@@ -12,31 +12,31 @@ namespace IvyLibrary
     /// <remarks>
     /// This class is can be optionally implemented alongside a <see cref="BaseModuleAttribute"/> to avoid reflection.
     /// </remarks>
-    public abstract class ModularBehaviour : MonoBehaviour
+    public abstract class ModularBehaviour<TModuleAttribute> : MonoBehaviour where TModuleAttribute : BaseModuleAttribute
     {
         /// <summary>
         /// The <see cref="BaseModuleAttribute"/> instance applied to this class.
         /// </summary>
-        public BaseModuleAttribute Metadata { get; }
+        public TModuleAttribute Metadata { get; }
 
         public ModularBehaviour()
         {
-            if (BaseModuleAttribute.earlyAssignmentMetadata != null)
+            if (BaseModuleAttribute.earlyAssignmentMetadata is TModuleAttribute earlyAssignmentMetadata)
             {
-                Metadata = BaseModuleAttribute.earlyAssignmentMetadata;
+                Metadata = earlyAssignmentMetadata;
                 BaseModuleAttribute.earlyAssignmentMetadata = null;
             }
             else
             {
-                List<HG.Reflection.SearchableAttribute> attributes = HG.Reflection.SearchableAttribute.GetInstances<BaseModuleAttribute>();
+                List<HG.Reflection.SearchableAttribute> attributes = HG.Reflection.SearchableAttribute.GetInstances<TModuleAttribute>();
                 if (attributes != null)
                 {
                     Type type = GetType();
-                    Metadata = (BaseModuleAttribute)attributes.FirstOrDefault(x => x.target is Type moduleType && moduleType == type);
+                    Metadata = (TModuleAttribute)attributes.FirstOrDefault(x => x.target is Type moduleType && moduleType == type);
                 }
                 if (Metadata == null)
                 {
-                    Debug.LogWarning($"Could not locate metadata for {nameof(ModularBehaviour)} instance of type {GetType().Name}!");
+                    Debug.LogWarning($"Could not locate metadata for {nameof(ModularBehaviour<TModuleAttribute>)} instance of type {GetType().Name}!");
                 }
             }
         }
