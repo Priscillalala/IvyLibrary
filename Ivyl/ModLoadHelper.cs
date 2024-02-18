@@ -11,10 +11,10 @@ namespace IvyLibrary
 {
     public class ModLoadHelper : IEnumerator
     {
-        private readonly List<BaseLoadOperation> loadOperations = new List<BaseLoadOperation>();
-        private readonly List<BaseGenericOperation> genericOperations = new List<BaseGenericOperation>();
+        private List<BaseLoadOperation> loadOperations = new List<BaseLoadOperation>();
+        private List<BaseGenericOperation> genericOperations = new List<BaseGenericOperation>();
         public readonly IEnumerator coroutine;
-        private IProgress<float> progressReceiver;
+        private readonly IProgress<float> progressReceiver;
         private float totalWeight;
         private float completedWeight;
 
@@ -51,8 +51,11 @@ namespace IvyLibrary
                 }
                 SetProgress((completedWeight + currentProgressWeight) / totalWeight);
             }
-            foreach (BaseGenericOperation genericOperation in genericOperations)
+            loadOperations = null;
+
+            for (int i = 0; i < genericOperations.Count; i++)
             {
+                BaseGenericOperation genericOperation = genericOperations[i];
                 IEnumerator operation = genericOperation.Execute();
                 if (operation != null)
                 {
@@ -67,6 +70,7 @@ namespace IvyLibrary
                 }
                 SetProgress((completedWeight += genericOperation.weight) / totalWeight);
             }
+            genericOperations = null;
 
             void SetProgress(float newProgress)
             {
@@ -99,6 +103,10 @@ namespace IvyLibrary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddLoadOperation(BaseLoadOperation loadOperation)
         {
+            if (loadOperations == null)
+            {
+                throw new InvalidOperationException();
+            }
             loadOperations.Add(loadOperation);
             totalWeight += loadOperation.weight;
         }
@@ -420,6 +428,10 @@ namespace IvyLibrary
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void AddGenericOperation(BaseGenericOperation operation)
         {
+            if (genericOperations == null) 
+            {
+                throw new InvalidOperationException();
+            }
             genericOperations.Add(operation);
             totalWeight += operation.weight;
         }

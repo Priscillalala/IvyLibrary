@@ -11,14 +11,12 @@ namespace IvyLibrary
 {
     public interface ILoadStaticContentAsyncArgs
     {
-        IProgress<float> progressReceiver { get; set; }
         ReadOnlyArray<ContentPackLoadInfo> peerLoadInfos { get; set; }
         ContentPack content { get; set; }
     }
 
     public interface IGetContentPackAsyncArgs
     {
-        IProgress<float> progressReceiver { get; set; }
         ReadOnlyArray<ContentPackLoadInfo> peerLoadInfos { get; set; }
         ContentPack output { get; set; }
         int retriesRemaining { get; set; }
@@ -26,39 +24,29 @@ namespace IvyLibrary
 
     public interface IFinalizeAsyncArgs
     {
-        IProgress<float> progressReceiver { get;  set; }
         ReadOnlyArray<ContentPackLoadInfo> peerLoadInfos { get; set; }
         ReadOnlyContentPack finalContentPack { get; set; }
     }
 
     public class BaseContentPlugin : BaseContentPlugin<BaseContentPlugin.LoadStaticContentAsyncArgs, BaseContentPlugin.GetContentPackAsyncArgs, BaseContentPlugin.FinalizeAsyncArgs> 
     {
-        public struct LoadStaticContentAsyncArgs : ILoadStaticContentAsyncArgs, IProgress<float>
+        public struct LoadStaticContentAsyncArgs : ILoadStaticContentAsyncArgs
         {
-            public IProgress<float> progressReceiver { get; set; }
             public ReadOnlyArray<ContentPackLoadInfo> peerLoadInfos { get; set; }
             public ContentPack content { get; set; }
-
-            public void Report(float progress) => progressReceiver.Report(progress);
         }
 
-        public struct GetContentPackAsyncArgs : IGetContentPackAsyncArgs, IProgress<float>
+        public struct GetContentPackAsyncArgs : IGetContentPackAsyncArgs
         {
-            public IProgress<float> progressReceiver { get; set; }
             public ReadOnlyArray<ContentPackLoadInfo> peerLoadInfos { get; set; }
             public ContentPack output { get; set; }
             public int retriesRemaining { get; set; }
-
-            public void Report(float progress) => progressReceiver.Report(progress);
         }
 
-        public struct FinalizeAsyncArgs : IFinalizeAsyncArgs, IProgress<float>
+        public struct FinalizeAsyncArgs : IFinalizeAsyncArgs
         {
-            public IProgress<float> progressReceiver { get; set; }
             public ReadOnlyArray<ContentPackLoadInfo> peerLoadInfos { get; set; }
             public ReadOnlyContentPack finalContentPack { get; set; }
-
-            public void Report(float progress) => progressReceiver.Report(progress);
         }
     }
 
@@ -77,9 +65,9 @@ namespace IvyLibrary
 
         string IContentPackProvider.identifier => Info.Metadata.GUID;
 
-        public delegate IEnumerator LoadStaticContentAsyncDelegate(TLoadStaticContentAsyncArgs args);
-        public delegate IEnumerator GenerateContentPackAsyncDelegate(TGetContentPackAsyncArgs args);
-        public delegate IEnumerator FinalizeAsyncDelegate(TFinalizeAsyncArgs args);
+        public delegate IEnumerator LoadStaticContentAsyncDelegate(TLoadStaticContentAsyncArgs args, IProgress<float> progressReceiver);
+        public delegate IEnumerator GenerateContentPackAsyncDelegate(TGetContentPackAsyncArgs args, IProgress<float> progressReceiver);
+        public delegate IEnumerator FinalizeAsyncDelegate(TFinalizeAsyncArgs args, IProgress<float> progressReceiver);
 
         /// <summary>
         /// Subscribers are yielded in parallel during <see cref="IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs)"/>.
@@ -110,19 +98,19 @@ namespace IvyLibrary
         /// The default implementation invokes <see cref="loadStaticContentAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>. This behavior can be overridden.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual IEnumerator LoadStaticContentAsync(TLoadStaticContentAsyncArgs args)
+        protected virtual IEnumerator LoadStaticContentAsync(TLoadStaticContentAsyncArgs args, IProgress<float> progressReceiver)
         {
             if (loadStaticContentAsync != null)
             {
-                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(args.progressReceiver);
+                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(progressReceiver);
                 foreach (LoadStaticContentAsyncDelegate func in loadStaticContentAsync.GetInvocationList())
                 {
                     if (func != null)
                     {
-                        ReadableProgress<float> readableProgress = new ReadableProgress<float>();
+                        ReadableProgress<float> subscriberProgressReceiver = new ReadableProgress<float>();
                         parallelProgressCoroutine.Add(
-                            func(args with { progressReceiver = readableProgress }),
-                            readableProgress);
+                            func(args, subscriberProgressReceiver),
+                            subscriberProgressReceiver);
                     }
                 }
                 while (parallelProgressCoroutine.MoveNext())
@@ -140,20 +128,20 @@ namespace IvyLibrary
         /// The default implementation invokes <see cref="generateContentPackAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>, then outputs <see cref="Content"/>. This behavior can be overridden.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual IEnumerator GenerateContentPackAsync(TGetContentPackAsyncArgs args)
+        protected virtual IEnumerator GenerateContentPackAsync(TGetContentPackAsyncArgs args, IProgress<float> progressReceiver)
         {
             ContentPack.Copy(Content, args.output);
             if (generateContentPackAsync != null)
             {
-                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(args.progressReceiver);
+                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(progressReceiver);
                 foreach (GenerateContentPackAsyncDelegate func in generateContentPackAsync.GetInvocationList())
                 {
                     if (func != null)
                     {
-                        ReadableProgress<float> readableProgress = new ReadableProgress<float>();
+                        ReadableProgress<float> subscriberProgressReceiver = new ReadableProgress<float>();
                         parallelProgressCoroutine.Add(
-                            func(args with { progressReceiver = readableProgress }),
-                            readableProgress);
+                            func(args, subscriberProgressReceiver),
+                            subscriberProgressReceiver);
                     }
                 }
                 while (parallelProgressCoroutine.MoveNext())
@@ -170,20 +158,20 @@ namespace IvyLibrary
         /// The default implementation invokes <see cref="finalizeAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>, then populates the asset ids of networked objects in <see cref="Content"/>. This behavior can be overridden.
         /// </remarks>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        protected virtual IEnumerator FinalizeAsync(TFinalizeAsyncArgs args)
+        protected virtual IEnumerator FinalizeAsync(TFinalizeAsyncArgs args, IProgress<float> progressReceiver)
         {
             generateContentPackAsync = null;
             if (finalizeAsync != null)
             {
-                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(args.progressReceiver);
+                ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine(progressReceiver);
                 foreach (FinalizeAsyncDelegate func in finalizeAsync.GetInvocationList())
                 {
                     if (func != null)
                     {
-                        ReadableProgress<float> readableProgress = new ReadableProgress<float>();
+                        ReadableProgress<float> subscriberProgressReceiver = new ReadableProgress<float>();
                         parallelProgressCoroutine.Add(
-                            func(args with { progressReceiver = readableProgress }),
-                            readableProgress);
+                            func(args, subscriberProgressReceiver),
+                            subscriberProgressReceiver);
                     }
                 }
                 while (parallelProgressCoroutine.MoveNext())
@@ -197,24 +185,21 @@ namespace IvyLibrary
 
         IEnumerator IContentPackProvider.LoadStaticContentAsync(RoR2.ContentManagement.LoadStaticContentAsyncArgs args) => LoadStaticContentAsync(new TLoadStaticContentAsyncArgs 
         {
-            progressReceiver = args.progressReceiver,
             peerLoadInfos = args.peerLoadInfos,
             content = Content,
-        });
+        }, args.progressReceiver);
 
         IEnumerator IContentPackProvider.GenerateContentPackAsync(RoR2.ContentManagement.GetContentPackAsyncArgs args) => GenerateContentPackAsync(new TGetContentPackAsyncArgs 
         {
-            progressReceiver = args.progressReceiver,
             peerLoadInfos = args.peerLoadInfos,
             output = args.output,
             retriesRemaining = args.retriesRemaining,
-        });
+        }, args.progressReceiver);
 
         IEnumerator IContentPackProvider.FinalizeAsync(RoR2.ContentManagement.FinalizeAsyncArgs args) => FinalizeAsync(new TFinalizeAsyncArgs 
         {
-            progressReceiver = args.progressReceiver,
             peerLoadInfos = args.peerLoadInfos,
             finalContentPack = args.finalContentPack,
-        });
+        }, args.progressReceiver);
     }
 }

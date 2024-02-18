@@ -20,6 +20,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using ThreeEyedGames;
+using UnityEngine.ResourceManagement.ResourceLocations;
 
 [module: UnverifiableCode]
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -224,6 +225,24 @@ namespace IvyLibrary
                 return Addressables.ResourceManager.CreateCompletedOperation<IDictionary<string, TObject>>(dict, null);
             });
             return handle.IsDone ? null : handle;
+        }
+
+        public static AsyncOperationHandle<IDictionary<string, TObject>> ToAssetDictionary<TObject>(this AsyncOperationHandle<IList<IResourceLocation>> locations)
+        {
+            var assets = Addressables.ResourceManager.CreateChainOperation<IList<TObject>>(locations, _ =>
+            {
+                return Addressables.LoadAssetsAsync<TObject>(locations.Result, null, false);
+            });
+            return Addressables.ResourceManager.CreateChainOperation<IDictionary<string, TObject>>(assets, _ =>
+            {
+                Dictionary<string, TObject> assetDictionary = new Dictionary<string, TObject>();
+                for (int i = 0; i < assets.Result.Count; i++)
+                {
+                    string key = locations.Result[i].PrimaryKey;
+                    assetDictionary[key] = assetDictionary[System.IO.Path.GetFileNameWithoutExtension(key)] = assets.Result[i];
+                }
+                return Addressables.ResourceManager.CreateCompletedOperation<IDictionary<string, TObject>>(assetDictionary, null);
+            });
         }
 
         /// <summary>
