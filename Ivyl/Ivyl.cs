@@ -648,6 +648,27 @@ namespace IvyLibrary
             return component.GetComponent(componentType) ?? component.gameObject.AddComponent(componentType);
         }
 
+        public static void Copy(this LoadStaticContentAsyncArgs src, LoadStaticContentAsyncArgs dest)
+        {
+            dest.progressReceiver = src.progressReceiver;
+            dest.peerLoadInfos = src.peerLoadInfos;
+        }
+
+        public static void Copy(this GetContentPackAsyncArgs src, GetContentPackAsyncArgs dest)
+        {
+            dest.progressReceiver = src.progressReceiver;
+            dest.peerLoadInfos = src.peerLoadInfos;
+            dest.output = src.output;
+            dest.retriesRemaining = src.retriesRemaining;
+        }
+
+        public static void Copy(this FinalizeAsyncArgs src, FinalizeAsyncArgs dest)
+        {
+            dest.progressReceiver = src.progressReceiver;
+            dest.peerLoadInfos = src.peerLoadInfos;
+            dest.finalContentPack = src.finalContentPack;
+        }
+
         /// <summary>
         /// Modify the value of a serialized field stored in this <see cref="EntityStateConfiguration"/>.
         /// </summary>
