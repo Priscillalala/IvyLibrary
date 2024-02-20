@@ -187,13 +187,11 @@ namespace IvyLibrary
         }
 
         /// <summary>
-        /// Asynchronously load multiple addressable assets and construct an asset dictionary.
+        /// Construct an asset dictionary from the assets at these resource locations.
         /// </summary>
         /// <typeparam name="TObject">Asset type.</typeparam>
-        /// <param name="keys">Keys or labels for the desired assets.</param>
-        /// <param name="handle">The load handle, to access the loaded assets.</param>
-        /// <param name="mergeMode">Determines how <paramref name="keys"/> are evaluated.</param>
-        /// <returns><paramref name="handle"/> or null as an <see cref="IEnumerator"/>, to be yielded.</returns>
+        /// <param name="locations">Locations of the relevant assets.</param>
+        /// <returns>A continuation of the async operation where <see cref="AsyncOperationHandle{TObject}.Result"/> is a dictionary mapping asset name or asset path to asset.</returns>
         public static AsyncOperationHandle<IDictionary<string, TObject>> ToAssetDictionary<TObject>(this AsyncOperationHandle<IList<IResourceLocation>> locations)
         {
             var assets = Addressables.ResourceManager.CreateChainOperation<IList<TObject>>(locations, _ =>
@@ -252,19 +250,24 @@ namespace IvyLibrary
         }
 
         /// <summary>
-        /// Asynchronously load a bundled asset with inlined syntax.
+        /// Asynchronously load a bundled asset with a generic request handle.
         /// </summary>
         /// <typeparam name="T">Asset type.</typeparam>
         /// <param name="assetBundle"></param>
-        /// <param name="name">The name of the requested asset.</param>
-        /// <param name="request">The load request, to access the loaded asset.</param>
-        /// <returns><paramref name="request"/> as an <see cref="IEnumerator"/>, to be yielded.</returns>
+        /// <param name="name">The name or path of the requested asset.</param>
+        /// <returns>A generic <see cref="AssetBundleRequest{T}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AssetBundleRequest<T> LoadAsync<T>(this AssetBundle assetBundle, string name) where T : UnityEngine.Object
         {
             return assetBundle.LoadAssetAsync<T>(name).Convert<T>();
         }
 
+        /// <summary>
+        /// Asynchronously load all bundled assets of type <typeparamref name="T"/> with a generic request handle.
+        /// </summary>
+        /// <typeparam name="T">Asset type.</typeparam>
+        /// <param name="assetBundle"></param>
+        /// <returns>A generic <see cref="AssetBundleRequest{T}"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AssetBundleRequest<T> LoadAllAsync<T>(this AssetBundle assetBundle) where T : UnityEngine.Object
         {

@@ -12,8 +12,17 @@ using System.Linq;
 
 namespace IvyLibrary
 {
+    /// <summary>
+    /// A specialized <see cref="BaseUnityPlugin"/> that generates a <see cref="ContentPack"/> and implements <see cref="IContentPackProvider"/>; comparable to <see cref="RoR2Content"/>.
+    /// </summary>
     public abstract class BaseContentPlugin : BaseContentPlugin<BaseContentPlugin.LoadStaticContentAsyncArgs, BaseContentPlugin.GetContentPackAsyncArgs, BaseContentPlugin.FinalizeAsyncArgs> 
     {
+        /// <summary>
+        /// A specialized version of <see cref="RoR2.ContentManagement.LoadStaticContentAsyncArgs"/> for use with <see cref="BaseContentPlugin{TLoadStaticContentAsyncArgs, TGetContentPackAsyncArgs, TFinalizeAsyncArgs}"/>.
+        /// </summary>
+        /// <remarks>
+        /// Inherit from this class to define custom args for a <see cref="BaseContentPlugin{TLoadStaticContentAsyncArgs, TGetContentPackAsyncArgs, TFinalizeAsyncArgs}"/>.
+        /// </remarks>
         public class LoadStaticContentAsyncArgs : RoR2.ContentManagement.LoadStaticContentAsyncArgs
         {
             public LoadStaticContentAsyncArgs() 
@@ -27,6 +36,12 @@ namespace IvyLibrary
             public ContentPack content { get; init; }
         }
 
+        /// <summary>
+        /// A specialized version of <see cref="RoR2.ContentManagement.GetContentPackAsyncArgs"/> for use with <see cref="BaseContentPlugin{TLoadStaticContentAsyncArgs, TGetContentPackAsyncArgs, TFinalizeAsyncArgs}"/>.
+        /// </summary>
+        /// <remarks>
+        /// Inherit from this class to define custom args for a <see cref="BaseContentPlugin{TLoadStaticContentAsyncArgs, TGetContentPackAsyncArgs, TFinalizeAsyncArgs}"/>.
+        /// </remarks>
         public class GetContentPackAsyncArgs : RoR2.ContentManagement.GetContentPackAsyncArgs
         {
             public GetContentPackAsyncArgs() 
@@ -41,6 +56,12 @@ namespace IvyLibrary
             public new int retriesRemaining => base.retriesRemaining;
         }
 
+        /// <summary>
+        /// A specialized version of <see cref="RoR2.ContentManagement.FinalizeAsyncArgs"/> for use with <see cref="BaseContentPlugin{TLoadStaticContentAsyncArgs, TGetContentPackAsyncArgs, TFinalizeAsyncArgs}"/>.
+        /// </summary>
+        /// <remarks>
+        /// Inherit from this class to define custom args for a <see cref="BaseContentPlugin{TLoadStaticContentAsyncArgs, TGetContentPackAsyncArgs, TFinalizeAsyncArgs}"/>.
+        /// </remarks>
         public class FinalizeAsyncArgs : RoR2.ContentManagement.FinalizeAsyncArgs
         {
             public FinalizeAsyncArgs() 
@@ -55,9 +76,10 @@ namespace IvyLibrary
         }
     }
 
-    /// <summary>
-    /// A specialized <see cref="BaseUnityPlugin"/> that generates a <see cref="ContentPack"/> and implements <see cref="IContentPackProvider"/>; comparable to <see cref="RoR2Content"/>.
-    /// </summary>
+    /// <inheritdoc cref="BaseContentPlugin"/>
+    /// <typeparam name="TLoadStaticContentAsyncArgs">Custom <see cref="BaseContentPlugin.LoadStaticContentAsyncArgs"/>.</typeparam>
+    /// <typeparam name="TGetContentPackAsyncArgs">Custom <see cref="BaseContentPlugin.GetContentPackAsyncArgs"/>.</typeparam>
+    /// <typeparam name="TFinalizeAsyncArgs">Custom <see cref="BaseContentPlugin.FinalizeAsyncArgs"/>.</typeparam>
     public abstract class BaseContentPlugin<TLoadStaticContentAsyncArgs, TGetContentPackAsyncArgs, TFinalizeAsyncArgs> : BaseUnityPlugin, IContentPackProvider
         where TLoadStaticContentAsyncArgs : BaseContentPlugin.LoadStaticContentAsyncArgs, new()
         where TGetContentPackAsyncArgs : BaseContentPlugin.GetContentPackAsyncArgs, new()
@@ -102,6 +124,7 @@ namespace IvyLibrary
         /// <remarks>
         /// The default implementation invokes <see cref="loadStaticContentAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>. This behavior can be overridden.
         /// </remarks>
+        /// <returns>An <see cref="IEnumerator{T}"/> of type <see cref="float"/> where <see cref="IEnumerator{T}.Current"/> represents the current progress of the operation from <c>0f</c> to <c>1f</c>.</returns>
         protected virtual IEnumerator<float> LoadStaticContentAsync(TLoadStaticContentAsyncArgs args)
         {
             if (loadStaticContentAsync != null)
@@ -123,8 +146,9 @@ namespace IvyLibrary
         /// Implementation of <see cref="IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs)"/>.
         /// </summary>
         /// <remarks>
-        /// The default implementation invokes <see cref="generateContentPackAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>, then outputs <see cref="Content"/>. This behavior can be overridden.
+        /// The default implementation copies <see cref="Content"/> to <see cref="GetContentPackAsyncArgs.output"/>, then invokes <see cref="generateContentPackAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>. This behavior can be overridden.
         /// </remarks>
+        /// <returns>An <see cref="IEnumerator{T}"/> of type <see cref="float"/> where <see cref="IEnumerator{T}.Current"/> represents the current progress of the operation from <c>0f</c> to <c>1f</c>.</returns>
         protected virtual IEnumerator<float> GenerateContentPackAsync(TGetContentPackAsyncArgs args)
         {
             ContentPack.Copy(Content, args.output);
@@ -147,8 +171,9 @@ namespace IvyLibrary
         /// Implementation of <see cref="IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs)"/>.
         /// </summary>
         /// <remarks>
-        /// The default implementation invokes <see cref="finalizeAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>, then populates the asset ids of networked objects in <see cref="Content"/>. This behavior can be overridden.
+        /// The default implementation populates the asset ids of networked objects in <see cref="Content"/>, then invokes <see cref="finalizeAsync"/> and tracks the results as a <see cref="ParallelProgressCoroutine"/>. This behavior can be overridden.
         /// </remarks>
+        /// <returns>An <see cref="IEnumerator{T}"/> of type <see cref="float"/> where <see cref="IEnumerator{T}.Current"/> represents the current progress of the operation from <c>0f</c> to <c>1f</c>.</returns>
         protected virtual IEnumerator<float> FinalizeAsync(TFinalizeAsyncArgs args)
         {
             Content.PopulateNetworkedObjectAssetIds();
