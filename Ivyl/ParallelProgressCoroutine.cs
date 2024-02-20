@@ -20,14 +20,12 @@ namespace IvyLibrary
 
         private IEnumerator InternalCoroutine()
         {
-            Debug.Log("InternalCoroutine on the move");
             while (coroutinesList.Count > 0) 
             {
                 float currentProgress = 0;
                 for (int i = coroutinesList.Count - 1; i >= 0; i--)
                 {
                     IEnumerator<float> coroutine = coroutinesList[i];
-                    Debug.Log("InternalCoroutine sub routine on the move");
                     if (coroutine.MoveNext())
                     {
                         currentProgress += Mathf.Clamp01(coroutine.Current);

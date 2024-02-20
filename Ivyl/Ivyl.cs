@@ -187,19 +187,6 @@ namespace IvyLibrary
         }
 
         /// <summary>
-        /// Asynchronously load an addressable asset with inlined syntax.
-        /// </summary>
-        /// <typeparam name="TObject">Asset type.</typeparam>
-        /// <param name="key">A key for this asset; usually an address string.</param>
-        /// <param name="handle">The load handle, to access the loaded asset.</param>
-        /// <returns><paramref name="handle"/> or null as an <see cref="IEnumerator"/>, to be yielded.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerator LoadAddressableAssetAsync<TObject>(object key, out AsyncOperationHandle<TObject> handle)
-        {
-            return (handle = Addressables.LoadAssetAsync<TObject>(key)).IsDone ? null : handle;
-        }
-
-        /// <summary>
         /// Asynchronously load multiple addressable assets and construct an asset dictionary.
         /// </summary>
         /// <typeparam name="TObject">Asset type.</typeparam>
@@ -207,26 +194,6 @@ namespace IvyLibrary
         /// <param name="handle">The load handle, to access the loaded assets.</param>
         /// <param name="mergeMode">Determines how <paramref name="keys"/> are evaluated.</param>
         /// <returns><paramref name="handle"/> or null as an <see cref="IEnumerator"/>, to be yielded.</returns>
-        public static IEnumerator LoadAddressableAssetsAsync<TObject>(IEnumerable keys, out AsyncOperationHandle<IDictionary<string, TObject>> handle, Addressables.MergeMode mergeMode = Addressables.MergeMode.Union)
-        {
-            var loadLocations = Addressables.LoadResourceLocationsAsync(keys, mergeMode, typeof(TObject));
-            var loadAssets = Addressables.ResourceManager.CreateChainOperation<IList<TObject>>(loadLocations, x =>
-            {
-                return Addressables.LoadAssetsAsync<TObject>(loadLocations.Result, null, false);
-            });
-            handle = Addressables.ResourceManager.CreateChainOperation<IDictionary<string, TObject>>(loadAssets, x =>
-            {
-                Dictionary<string, TObject> dict = new Dictionary<string, TObject>();
-                for (int i = 0; i < loadAssets.Result.Count; i++)
-                {
-                    string key = loadLocations.Result[i].PrimaryKey;
-                    dict[key] = dict[System.IO.Path.GetFileNameWithoutExtension(key)] = loadAssets.Result[i];
-                }
-                return Addressables.ResourceManager.CreateCompletedOperation<IDictionary<string, TObject>>(dict, null);
-            });
-            return handle.IsDone ? null : handle;
-        }
-
         public static AsyncOperationHandle<IDictionary<string, TObject>> ToAssetDictionary<TObject>(this AsyncOperationHandle<IList<IResourceLocation>> locations)
         {
             var assets = Addressables.ResourceManager.CreateChainOperation<IList<TObject>>(locations, _ =>
@@ -292,12 +259,6 @@ namespace IvyLibrary
         /// <param name="name">The name of the requested asset.</param>
         /// <param name="request">The load request, to access the loaded asset.</param>
         /// <returns><paramref name="request"/> as an <see cref="IEnumerator"/>, to be yielded.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IEnumerator LoadAssetAsync<T>(this AssetBundle assetBundle, string name, out AssetBundleRequest<T> request) where T : UnityEngine.Object
-        {
-            return request = assetBundle.LoadAssetAsync<T>(name).Convert<T>();
-        }
-
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static AssetBundleRequest<T> LoadAsync<T>(this AssetBundle assetBundle, string name) where T : UnityEngine.Object
         {
@@ -806,8 +767,8 @@ namespace IvyLibrary
         /// <summary>
         /// Asynchronously set the displayed <paramref name="artifactCode"/> of an <see cref="ArtifactFormulaDisplay"/> prefab.
         /// </summary>
-        /// <returns>An <see cref="IEnumerator"/> to be yielded in an <see cref="IContentPackProvider"/>.</returns>
-        public static IEnumerator SetupArtifactFormulaDisplayAsync(ArtifactFormulaDisplay artifactFormulaDisplay, ArtifactCode artifactCode)
+        /// <returns>An <see cref="IEnumerator{T}"/> of type <see cref="float"/> where <see cref="IEnumerator{T}.Current"/> represents the current progress of the operation from <c>0f</c> to <c>1f</c>.</returns>
+        public static IEnumerator<float> SetupArtifactFormulaDisplayAsync(ArtifactFormulaDisplay artifactFormulaDisplay, ArtifactCode artifactCode)
         {
             List<AsyncOperationHandle> loadArtifactCompoundsOperations = new List<AsyncOperationHandle>
             {
@@ -822,9 +783,9 @@ namespace IvyLibrary
                 FindArtifactCompoundDefAsync(artifactCode.bottomRow.Item3),
             };
             var loadArtifactCompounds = Addressables.ResourceManager.CreateGenericGroupOperation(loadArtifactCompoundsOperations);
-            if (!loadArtifactCompounds.IsDone)
+            while (!loadArtifactCompounds.IsDone)
             {
-                yield return loadArtifactCompounds;
+                yield return loadArtifactCompounds.PercentComplete;
             }
 
             artifactFormulaDisplay.artifactCompoundDisplayInfos = new[]

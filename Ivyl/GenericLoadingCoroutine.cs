@@ -1,13 +1,9 @@
-﻿using RoR2.ContentManagement;
-using System.Collections;
+﻿using System.Collections;
 using System.Runtime.CompilerServices;
 using System;
-using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine;
 using System.Collections.Generic;
 using HG;
-using static IvyLibrary.ModLoadHelper;
-using System.Diagnostics;
 
 namespace IvyLibrary
 {

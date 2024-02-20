@@ -6,6 +6,7 @@ using UnityEngine.AddressableAssets;
 using System.Runtime.CompilerServices;
 using System.Collections;
 using RoR2.ContentManagement;
+using System.Collections.Generic;
 
 namespace IvyLibrary
 {
@@ -105,15 +106,15 @@ namespace IvyLibrary
         }
 
         /// <summary>
-        /// Asynchronously set a list of items that this void item will corrupt.
+        /// Asynchronously set the list of items that this void item will corrupt.
         /// </summary>
-        /// <returns>An <see cref="IEnumerator"/> to be yielded in an <see cref="IContentPackProvider"/>.</returns>
-        public static IEnumerator SetItemsToCorruptAsync(this ItemDef itemDef, params ItemDef[] itemsToCorrupt)
+        /// <returns>An <see cref="IEnumerator{T}"/> of type <see cref="float"/> where <see cref="IEnumerator{T}.Current"/> represents the current progress of the operation from <c>0f</c> to <c>1f</c>.</returns>
+        public static IEnumerator<float> SetItemsToCorruptAsync(this ItemDef itemDef, params ItemDef[] itemsToCorrupt)
         {
             var ContagiousItemProvider = Addressables.LoadAssetAsync<ItemRelationshipProvider>("RoR2/DLC1/Common/ContagiousItemProvider.asset");
-            if (!ContagiousItemProvider.IsDone)
+            while (!ContagiousItemProvider.IsDone)
             {
-                yield return ContagiousItemProvider;
+                yield return ContagiousItemProvider.PercentComplete;
             }
             SetItemsToCorruptImpl(itemDef, itemsToCorrupt, ContagiousItemProvider.Result);
         }

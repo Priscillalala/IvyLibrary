@@ -75,15 +75,15 @@ namespace IvyLibrary
         public delegate IEnumerator<float> FinalizeAsyncDelegate(TFinalizeAsyncArgs args);
 
         /// <summary>
-        /// Subscribers are yielded in parallel during <see cref="IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs)"/>.
+        /// Subscribers are progressed in parallel during <see cref="IContentPackProvider.LoadStaticContentAsync(LoadStaticContentAsyncArgs)"/>.
         /// </summary>
         public event LoadStaticContentAsyncDelegate loadStaticContentAsync;
         /// <summary>
-        /// Subscribers are yielded in parallel during <see cref="IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs)"/>.
+        /// Subscribers are progressed in parallel during <see cref="IContentPackProvider.GenerateContentPackAsync(GetContentPackAsyncArgs)"/>.
         /// </summary>
         public event GenerateContentPackAsyncDelegate generateContentPackAsync;
         /// <summary>
-        /// Subscribers are yielded in parallel during <see cref="IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs)"/>.
+        /// Subscribers are progressed in parallel during <see cref="IContentPackProvider.FinalizeAsync(FinalizeAsyncArgs)"/>.
         /// </summary>
         public event FinalizeAsyncDelegate finalizeAsync;
 
@@ -104,7 +104,6 @@ namespace IvyLibrary
         /// </remarks>
         protected virtual IEnumerator<float> LoadStaticContentAsync(TLoadStaticContentAsyncArgs args)
         {
-            Logger.LogInfo("LoadStaticContentAsync");
             if (loadStaticContentAsync != null)
             {
                 ParallelProgressCoroutine parallelProgressCoroutine = new ParallelProgressCoroutine();
@@ -115,10 +114,8 @@ namespace IvyLibrary
                         parallelProgressCoroutine.Add(func(args));
                     }
                 }
-                Logger.LogInfo("parallel LoadStaticContentAsync");
                 return parallelProgressCoroutine;
             }
-            Logger.LogInfo("empty LoadStaticContentAsync");
             return Enumerable.Empty<float>().GetEnumerator();
         }
 
@@ -141,10 +138,8 @@ namespace IvyLibrary
                         parallelProgressCoroutine.Add(func(args));
                     }
                 }
-                Logger.LogInfo("paralle GenerateContentPackAsync");
                 return parallelProgressCoroutine;
             }
-            Logger.LogInfo("empty GenerateContentPackAsync");
             return Enumerable.Empty<float>().GetEnumerator();
         }
 
@@ -167,10 +162,8 @@ namespace IvyLibrary
                         parallelProgressCoroutine.Add(func(args));
                     }
                 }
-                Logger.LogInfo("paralle FinalizeAsync");
                 return parallelProgressCoroutine;
             }
-            Logger.LogInfo("empty FinalizeAsync");
             return Enumerable.Empty<float>().GetEnumerator();
         }
 

@@ -5,6 +5,7 @@ using UnityEngine.AddressableAssets;
 using System.Runtime.CompilerServices;
 using System.Collections;
 using RoR2.ContentManagement;
+using System.Collections.Generic;
 
 namespace IvyLibrary
 {
@@ -58,13 +59,13 @@ namespace IvyLibrary
         /// <remarks>
         /// Scene previews are usually 480x288px.
         /// </remarks>
-        /// <returns>An <see cref="IEnumerator"/> to be yielded in an <see cref="IContentPackProvider"/>.</returns>
-        public static IEnumerator SetPreviewTextureAsync(this SceneDef sceneDef, Texture previewTexture)
+        /// <returns>An <see cref="IEnumerator{T}"/> of type <see cref="float"/> where <see cref="IEnumerator{T}.Current"/> represents the current progress of the operation from <c>0f</c> to <c>1f</c>.</returns>
+        public static IEnumerator<float> SetPreviewTextureAsync(this SceneDef sceneDef, Texture previewTexture)
         {
             var matBazaarSeerGolemplains = Addressables.LoadAssetAsync<Material>("RoR2/Base/bazaar/matBazaarSeerGolemplains.mat");
-            if (!matBazaarSeerGolemplains.IsDone)
+            while (!matBazaarSeerGolemplains.IsDone)
             {
-                yield return matBazaarSeerGolemplains;
+                yield return matBazaarSeerGolemplains.PercentComplete;
             }
             SetPreviewTextureImpl(sceneDef, previewTexture, matBazaarSeerGolemplains.Result);
         }
