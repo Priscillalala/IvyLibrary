@@ -7,6 +7,9 @@ using HG;
 
 namespace IvyLibrary
 {
+    /// <summary>
+    /// Combine delegates and coroutines to create a generic mod loading sequence.
+    /// </summary>
     public class GenericLoadingCoroutine : IEnumerator<float>, IEnumerable
     {
         private List<BaseOperationWrapper> operations = new List<BaseOperationWrapper>();

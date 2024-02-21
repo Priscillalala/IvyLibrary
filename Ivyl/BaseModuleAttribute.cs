@@ -13,7 +13,7 @@ namespace IvyLibrary
     /// <list type="bullet">
     /// <item>Define an attribute inheriting from <see cref="BaseModuleAttribute"/></item>
     /// <item>Implement <see cref="Initialize(object[], List{HG.Reflection.SearchableAttribute})"/> to define modularity</item>
-    /// <item>Add this attribute to component classes (e.g., <see cref="Component"/>, <see cref="MonoBehaviour"/>, <see cref="ModularBehaviour"/>, or derived) in your codebase</item>
+    /// <item>Add this attribute to component classes (e.g., <see cref="Component"/>, <see cref="MonoBehaviour"/>, <see cref="ModularBehaviour{TModuleAttribute}"/>, or derived) in your codebase</item>
     /// <item>Initialize all modules with <see cref="InitializeModules(Type, object[])"/> or an overload (usually during plugin Awake)</item>
     /// </list>
     /// <para><see cref="BaseModuleAttribute"/> is a <see cref="HG.Reflection.SearchableAttribute"/>. <see cref="HG.Reflection.SearchableAttribute.OptInAttribute"/> must be present.</para>

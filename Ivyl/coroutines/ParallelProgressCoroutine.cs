@@ -5,6 +5,9 @@ using System.Collections.Generic;
 
 namespace IvyLibrary
 {
+    /// <summary>
+    /// An variant of <see cref="HG.Coroutines.ParallelProgressCoroutine"/> that reports progress with <see cref="IEnumerator{T}"/> of type <see cref="float"/> instead of <see cref="IEnumerator"/> and <see cref="HG.ReadableProgress{T}"/> of type <see cref="float"/>.
+    /// </summary>
     public class ParallelProgressCoroutine : IEnumerator<float>
     {
         private List<IEnumerator<float>> coroutinesList = new List<IEnumerator<float>>();

@@ -1,14 +1,15 @@
-﻿using RoR2.ContentManagement;
-using System.Collections;
+﻿using System.Collections;
 using System.Runtime.CompilerServices;
 using System;
 using UnityEngine.ResourceManagement.AsyncOperations;
 using UnityEngine;
 using System.Collections.Generic;
-using HG;
 
 namespace IvyLibrary
 {
+    /// <summary>
+    /// Collects various asset loading operations and awaits them in parallel while tracking overall progress.
+    /// </summary>
     public class AwaitAssetsCoroutine : IEnumerator<float>, IEnumerable
     {
         private List<BaseLoadOperationWrapper> loadOperations = new List<BaseLoadOperationWrapper>();

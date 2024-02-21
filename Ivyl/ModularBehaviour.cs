@@ -12,10 +12,11 @@ namespace IvyLibrary
     /// <remarks>
     /// This class is can be optionally implemented alongside a <see cref="BaseModuleAttribute"/> to avoid reflection.
     /// </remarks>
+    /// <typeparam name="TModuleAttribute">The <see cref="BaseModuleAttribute"/> type associated with this behaviour.</typeparam>
     public abstract class ModularBehaviour<TModuleAttribute> : MonoBehaviour where TModuleAttribute : BaseModuleAttribute
     {
         /// <summary>
-        /// The <see cref="BaseModuleAttribute"/> instance applied to this class.
+        /// The <typeparamref name="TModuleAttribute"/> instance applied to this class.
         /// </summary>
         public TModuleAttribute Metadata { get; }
 
